@@ -131,6 +131,5 @@ def compute_clusters(nodes, regulations, updates, semantics, option, state):
         clusters = cluster_whole_space(state_space, counting)
 
     clusters_json = create_json(clusters)
-    print(clusters_json)
     return clusters_json
 
