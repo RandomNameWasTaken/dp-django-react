@@ -109,7 +109,6 @@ def print_options_for_clustering():
 
 def get_nodes(file_data):
     (nodes, regulations, updates, parametrizations) = read(file_data)
-    print(updates)
 
     result = {
         "nodes" : nodes,
@@ -119,7 +118,19 @@ def get_nodes(file_data):
 
     return result
 
-def compute_clusters(nodes, regulations, updates, semantics, option, state):
+def compute_clusters(nodes, regulations, updates, semantics_num, option, state):
+    print(nodes)
+    print(updates)
+
+    semantics = None
+    if int(semantics_num) == 1:
+        semantics = Semantics.ASYNC
+        
+    if int(semantics_num) == 2:
+        semantics = Semantics.SYNC
+
+    if semantics is None:
+        print("No semantics")
 
     clusters = []
     if option == '1':    

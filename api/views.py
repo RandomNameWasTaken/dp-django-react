@@ -8,11 +8,8 @@ import pickle
 @api_view(['GET'])
 def getData(request):
 
-    aeon_text = request.query_params.get('aeon')
-    aeon_text = aeon_text.replace("%", "\n")
-    print("getData")
-
-    print(aeon_text)
+    aeon_text = request.COOKIES.get('resultData')
+    aeon_text = aeon_text.split(" %%")
 
     result = get_nodes(aeon_text)
 
@@ -40,11 +37,10 @@ def getData(request):
 
 @api_view(['GET'])
 def getNodes(request):
-    aeon_text = request.query_params.get('aeon')
-    aeon_text = aeon_text.replace("%", "\n")
+    aeon_text = request.COOKIES.get('resultData')
+    aeon_text = aeon_text.split(" %%")
 
     result = get_nodes(aeon_text)
-    print(result)
     nodes_json = json.dumps(result["nodes"])
 
     return Response(nodes_json)

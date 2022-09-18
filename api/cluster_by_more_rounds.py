@@ -24,204 +24,101 @@ def get_name(number, nodes):
 
     return res
 
-def cluster_parents(data, number_of_nodes, child, clusters, ancs, nodes, regulations, updates, semantics):
-    print('cluster_parents')
-
-    c = data[child]['cluster']
-    ancestor = c.anc
-
-    ancestor_function = get_ancestor_function(semantics)
-
-    nodes_to_check = []
-    for y in c.nodes:
-        print(y)
-        ancestors = ancestor_function(y, number_of_nodes, nodes, regulations, updates) 
-        print(ancestors)
-        for n in ancestors:
-            if n not in data:
-                continue
-
-            if n == y or data[ancestor]['rank'] != data[n]['rank']:
-                continue
-            nodes_to_check.append(n)
-
-    nodes_to_add = nodes_to_check + list(data[ancestor]['cluster'].nodes)
-    descendants = list(data[ancestor]['cluster'].desc)
-    for n in set(nodes_to_check):
-        old_cluster = None
-
-        if 'cluster' in data[n]: # correct ancestors set of descendants
-
-            if data[n]['cluster'] == data[ancestor]['cluster']:
-                continue
-
-            old_cluster = data[n]['cluster']
-            nodes_to_add += list(data[n]['cluster'].nodes)
-            descendants += list(data[n]['cluster'].desc)
-
-        data[n]['cluster'] = data[ancestor]['cluster']
-
-        if old_cluster != None:
-            n_ancestor = old_cluster.anc
-            if n_ancestor != None:
-                # TODO Nejako lepsie??
-                for c in clusters:
-                    if old_cluster in c.desc:
-                        c.desc.remove(old_cluster)
-                        c.desc.add(data[ancestor]['cluster'])
-            #if old_cluster in clusters:
-            #    clusters.remove(old_cluster)
-
-    data[ancestor]['cluster'].desc = set(descendants)
-    data[ancestor]['cluster'].nodes = set(nodes_to_add)   
-    clusters.add(data[ancestor]['cluster'])
-
-
-
-def check_ancestor(data, number_of_nodes, n, clusters, ancs, nodes, regulations, updates, semantics):
-    print('check_ancestor')
-    stack = []
-    stack.append(n)
-    generate_fun = get_generate_function(semantics)
-
-    while len(stack) > 0:
-        node = stack.pop()
-        
-        count = 0
-        children = generate_fun(node, number_of_nodes, nodes, regulations, updates)
-        for child in children:
-            if ('color' in data[child] and data[child]['color'] == 'B') or child == node:
-                count += 1
-
-        if count == len(children):
-            data[node]['color'] == 'B'
-
-            if data[node]['cluster'].anc != None:
-                # TODO dat mimo cyklu?
-                cluster_parents(data, number_of_nodes, node, clusters, ancs, nodes, regulations, updates, semantics)
-                stack.append(data[node]['cluster'].anc)
-
-
 def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, semantics):
+    print(node_info)
+    anc_function = get_ancestor_function(semantics)
+    child_function = get_generate_function(semantics)
 
-    generate_fun = get_generate_function(semantics)
+    stack = [root]
+    first_cluster = ClusterNode(0, root)
+    node_info[root]['cluster'] = first_cluster
 
-    stack = []
-    cluster = ClusterNode(node_info[root]['rank'])
-    cluster.nodes.add(root)
-    stack.append(root)
-    node_info[root]['cluster'] = cluster
-    stack_len = 1
+    while stack:
+        curr_node = stack[-1]
+        curr_cluster = node_info[curr_node]['cluster']
 
-    node_info[root]['color'] = 'G'
-
-    clusters = { cluster }
-
-    ancs = { cluster: set() }
-    while stack_len != 0:
-
-        node = stack[stack_len - 1]
-        curr_cluster = node_info[node]['cluster']
-        stack_len_orig = stack_len
-        print('CL ' + str(node) + '  '+ str(node_info[node]['rank']))
-
-        children = generate_fun(node, number_of_nodes, nodes, regulations, updates) 
+        children = child_function(curr_node, number_of_nodes, nodes, regulations, updates)
         for child in children:
-
-            if child == node:
-                continue;
-
-            if node_info[node]['rank'] == node_info[child]['rank']:
-
-                if 'cluster' in node_info[child]:
-                    curr_cluster.nodes = curr_cluster.nodes.union(node_info[child]['cluster'].nodes)
-                    curr_cluster.desc = curr_cluster.desc.union(node_info[child]['cluster'].desc)
-
-                    if node_info[child]['cluster'].anc != None:
-                        if node_info[child]['cluster'] in node_info[node_info[child]['cluster'].anc]['cluster'].desc:
-                            node_info[node_info[child]['cluster'].anc]['cluster'].desc.remove(node_info[child]['cluster'])
-                        node_info[node_info[child]['cluster'].anc]['cluster'].desc.add(curr_cluster)
-
-                stack.append(child)
-                stack_len += 1
-                node_info[child]['color'] = 'G'
-
-                continue
 
             if 'cluster' in node_info[child]:
                 continue
 
-            if node_info[node]['rank'] + 1 == node_info[child]['rank']: # - nastava vzdy
+            if node_info[curr_node]['rank'] == node_info[child]['rank']:
+                print("same rank")
+                curr_cluster.add_node(child)
+                stack.append(child);
+                node_info[child]['cluster'] = curr_cluster
+                continue
+
+
+            if node_info[curr_node]['rank'] + 1 == node_info[child]['rank']:
+                print("+1 rank")
+
+                new_cluster = ClusterNode(node_info[child]['rank'], child)
                 stack.append(child)
-                stack_len += 1
-
-                new_cluster = ClusterNode(node_info[child]['rank'])
-                new_cluster.nodes.add(child)
-                node_info[node]['cluster'].desc.add(new_cluster)
-                new_cluster.anc = node 
-                ancs[new_cluster] = { node }
-
-                node_info[child]['color'] = 'G'
+                new_cluster.anc = curr_cluster
                 node_info[child]['cluster'] = new_cluster
-                clusters.add(new_cluster)
 
+                continue
+        
+        node_check = stack[-1]
+        if node_check == curr_node:
+            ancestors = anc_function(curr_node, number_of_nodes, nodes, regulations, updates)
+            print("ancestors")
+            ancestors_by_ranks = {}
+            for anc in ancestors:
+                ancestor_key = get_id(anc)
+                if ancestor_key not in node_info or 'cluster' not in node_info[ancestor_key]:
+                    continue
 
-        if stack_len_orig == stack_len:
-            node_info[node]['color'] = 'B'
-            if node_info[node]['cluster'].anc != None:
-                cluster_parents(node_info, number_of_nodes, node, clusters, ancs, nodes, regulations, updates, semantics)
-                check_ancestor(node_info, number_of_nodes, node_info[node]['cluster'].anc, clusters, ancs, nodes, regulations, updates, semantics)
+                r = node_info[ancestor_key]['rank']
+                if r in ancestors_by_ranks:
+                    ancestors_by_ranks[r].add(ancestor_key)
+                else:
+                    ancestors_by_ranks[r] = { ancestor_key }
 
-        if node_info[node]['color'] == 'B':
-            stack_len -= 1
+            # Join ancestors with same rank
+            for r in ancestors_by_ranks:
+                if len(ancestors_by_ranks[r]) > 1:
+                    cl = None
+                    for ancestor in ancestors_by_ranks[r]:
+                        if cl == None:
+                            cl = node_info[ancestor]['cluster']
+                            continue
+                        old_cluster = node_info[ancestor]['cluster']
+
+                        for node in old_cluster.nodes:
+                            node_info[node]['cluster'] = cl
+
+                        for node in node_info:
+                            if 'cluster' not in node_info[node]:
+                                continue
+                                
+                            if node_info[node]['cluster'].anc == old_cluster:
+                                node_info[node]['cluster'].anc = cl
+
+                        cl.join_cluster(node_info[ancestor]['cluster'])
             stack.pop()
 
-    cluster_correction(clusters)
+
+    # Compute descendants     
+    clusters = set()
+    for node in node_info:
+        if 'cluster' not in node_info[node]:
+            continue # TODO divne toto by malo byt spocitane?
+        clusters.add(node_info[node]['cluster'])
+
+    for cluster in clusters:
+        cl = cluster.anc
+        if cl != None:
+            cl.add_desc(cluster)
 
     return clusters
 
 
 # Cluster by groofe ham algo
-def clustering (data, ancestors, node, cluster, number_of_nodes, clusters):
-    cluster.nodes.add(node)
-    data[node]['cluster'] = cluster
-
-    for child in data[node]['children']:
-        if child == node or 'cluster' in data[child]:
-            continue;
-
-        if data[node]['rank'] == data[child]['rank']:
-            clustering(data, ancestors, child, cluster, number_of_nodes, clusters)
-            continue
-
-        if data[node]['rank'] + 1 == data[child]['rank']: # - nastava vzdy
-            new_cluster = ClusterNode(data[child]['rank'])
-            clusters.add(new_cluster)
-            clustering(data, ancestors, child, new_cluster, number_of_nodes, clusters)
-            data[child]['cluster'].anc = cluster
-            cluster.desc.add(data[child]['cluster'])
-
-            for c in data[child]['children']:
-                if c == node:
-                    new_cluster.desc.add(data[node]['cluster'])
-                    
-
-            nodes_of_child_clusters = list(data[child]['cluster'].nodes)
-            cluster_nodes_in_cluster(data, ancestors, node, cluster, number_of_nodes, nodes_of_child_clusters, clusters)
-            nodes_of_child_clusters_2 = list(data[child]['cluster'].nodes)
-            while (len(nodes_of_child_clusters) < len(nodes_of_child_clusters_2)):
-                nodes_of_child_clusters = list(data[child]['cluster'].nodes)
-                cluster_nodes_in_cluster(data, node, cluster, number_of_nodes, clustered, nodes_of_child_clusters, clusters)
-                nodes_of_child_clusters_2 = list(data[child]['cluster'].nodes)
-
-def cluster_nodes_in_cluster(data, ancestors, node, cluster, number_of_nodes, nodes, clusters):
-    for y in nodes:
-        for n in data:
-            if n == node:
-                continue
-            for w in data[n]['children']:
-                if y == w and 'cluster' not in data[n] and data[node]['rank'] == data[n]['rank']:
-                        clustering(data, ancestors, n, cluster, number_of_nodes, clusters)
+#def clustering (data, ancestors, node, cluster, number_of_nodes, clusters):
+    
 
 def print_cluster_nodes(cluster_node, n):
     print(n)
@@ -243,7 +140,6 @@ def rank_by_path(root, rank, number_of_nodes, nodes, regulations, updates, seman
 
     while queue:
         node = queue.popleft()
-        print(node)
 
         children = generate_fun(node, number_of_nodes, nodes, regulations, updates) 
         for child in children:
@@ -256,7 +152,11 @@ def rank_by_path(root, rank, number_of_nodes, nodes, regulations, updates, seman
     return ranks
 
 def cluster(root, number_of_nodes, nodes, regulations, updates, semantics):
+    ranks = rank_by_path(root, 0, number_of_nodes, nodes, regulations, updates, semantics)
+    clusters = clustering_(root, number_of_nodes, ranks, nodes, regulations, updates, semantics)
+    return clusters
 
+"""
     if root == '':
         states = list(state_space.keys())
         states.sort(key=(lambda x : len(ancestors[x])))
@@ -286,9 +186,6 @@ def cluster(root, number_of_nodes, nodes, regulations, updates, semantics):
         return (state_space, clusters)
 
     # ----------------------------------------------------------- ROOT
-    ranks = rank_by_path(root, 0, number_of_nodes, nodes, regulations, updates, semantics)
+"""
 
-    clusters = clustering_(root, number_of_nodes, ranks, nodes, regulations, updates, semantics)
-
-    return clusters
 

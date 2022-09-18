@@ -1,42 +1,24 @@
+
 class ClusterNode:
 
-    def __init__(self, rank):
-        self.nodes = set()
+    def __init__(self, rank, node):
+        self.nodes = { node }
         self.desc = set()
         self.rank = rank
         self.anc = None
-        self.id = None
 
     def get_name(self):
       #  return ",".join([ str(i) for i in self.nodes ])
       nod = list(self.nodes)
-      nod = [str(i) for i in nod]
-      nod.sort()
-      joined_nodes = '_'.join(nod)
-      return 'r' + str(self.rank) + '_' + joined_nodes
+      return str(self.rank) + '_' + str(nod[0])
 
+    def add_node(self, node):
+        self.nodes.add(node)
 
-def cluster_correction(clusters):
-    id_cl = 0
-    for i in clusters:
+    def add_desc(self, cluster):
+        self.desc.add(cluster)
 
-        i.id = 'C' + str(id_cl)
-        id_cl += 1
-
-        repair = {}
-        for child in i.desc:
-
-            if child not in clusters:
-                found_subst = None
-                for c in clusters:
-                    if found_subst != None:
-                        break
-                    for node in child.nodes:
-                        if node in c.nodes:
-                            found_subst = c
-                            repair[child] = c
-                            break
-        for r in repair:
-            i.desc.remove(r)
-            i.desc.add(repair[r])
+    def join_cluster(self, cluster):
+        self.nodes = self.nodes.union(cluster.nodes)
+        self.desc = self.desc.union(cluster.desc)
 

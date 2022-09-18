@@ -35,7 +35,6 @@ def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, regulations, u
         if new_state == curr_state:
             ancestors.append(pot_ancestor)
 
-
     return frozenset(ancestors)
             
 def get_ancestors_of_node_sync(state_id, number_of_nodes, nodes, regulations, updates):

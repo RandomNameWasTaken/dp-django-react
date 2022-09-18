@@ -84,7 +84,7 @@ def parse(Lines):
     # PARSE
     r_skip = re.compile('^\s*#');
     r_update_catch = re.compile('^\s*\$(?P<node>\w+)\s*:\s*(?P<rules>.+)\s*$');
-    r_regul = re.compile('^(?P<regulator>\w+)\s*-(?P<kind>>|\|)\s*(?P<node>\w+)');
+    r_regul = re.compile('^\s*(?P<regulator>\w+)\s*-(?P<kind>>|\|)\s*(?P<node>\w+)');
     r_param = re.compile('.*( |:)(?P<parametrization>(\w|_)+\(.+\))')
     r_begin_of_param = re.compile('(\w|_)+\(')
 
@@ -150,7 +150,6 @@ def parse(Lines):
     return (nodes, regulations, updates, parametrizations)
 
 def read(Lines):
-    Lines = Lines.split("\n")
     (nodes, regulations, updates, parametrizations) = parse(Lines)
 
     return (nodes, regulations, updates, parametrizations)
