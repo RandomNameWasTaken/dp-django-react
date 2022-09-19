@@ -118,44 +118,11 @@ export function init3Dgraphics(element, data) {
     scene.add(cylinder);
   }
 
-  function _mergeMeshes(meshes, toBufferGeometry) {
-
-    var finalGeometry,
-        materials = [],
-        mergedGeometry = new THREE.BufferGeometry(),
-        mergeMaterial,
-        mergedMesh;
-
-    meshes.forEach(function(mesh, index) {
-        console.log(mesh.geometry);
-        mesh.updateMatrix();
-      //  mesh.geometry.faces.forEach(function(face) {face.materialIndex = 0;});
-        mergedGeometry.merge(mesh.geometry, mesh.matrix, index);
-        materials.push(mesh.material);
-    });
-
-    mergedGeometry.groupsNeedUpdate = true;
-    mergeMaterial = new THREE.MeshBasicMaterial(materials);
-
-    if (toBufferGeometry) {
-        finalGeometry = new THREE.BufferGeometry().fromGeometry(mergedGeometry);
-    } else {
-        finalGeometry = mergedGeometry;
-    }
-
-    mergedMesh = new THREE.Mesh(finalGeometry, mergeMaterial);
-//    mergedMesh.geometry.computeFaceNormals();
-    mergedMesh.geometry.computeVertexNormals();
-
-    return mergedMesh;
-
-}
-
   // prevPoint, point - upper and downer middle points of cylinder
   // dirPoint - point to which direction of cylinder (dir vector) should go 
   function clustering(scene, data, id, max_branching, branch_count, prevPointFirst, pointFirst) {
 
-    if (id == undefined) {
+    if (id === undefined) {
       console.log("Id is undefined in clustering");
       return;
     }
@@ -183,9 +150,9 @@ export function init3Dgraphics(element, data) {
       const prevPointPointDist = Math.sqrt((point.x - prevPoint.x) * (point.x - prevPoint.x) + (point.y - prevPoint.y)
                               * (point.y - prevPoint.y) + (point.z - prevPoint.z) * (point.z - prevPoint.z));
 
-      for (var i = 0; i < childCount; ++i) {
+      for (i = 0; i < childCount; ++i) {
 
-        if (childCount == 1) {
+        if (childCount === 1) {
 
             const dirVector = new THREE.Vector3(point.x - prevPoint.x, point.y - prevPoint.y, point.z - prevPoint.z);
             const newPoint = new Point(dirVector.x + point.x, dirVector.y + point.y, dirVector.z + point.z);
@@ -254,7 +221,7 @@ export function init3Dgraphics(element, data) {
         }
       }
 
-      if (count_black == data[current]["DescCount"]) {
+      if (count_black === data[current]["DescCount"]) {
         colors[current] = 'B';
         stack.pop();
 
@@ -274,7 +241,7 @@ export function init3Dgraphics(element, data) {
     var maxCluster = 1;
     var biggestRank = 0;
     Object.entries(data).forEach(([k,v]) => {
-      if (v["Rank"] == 0) {
+      if (v["Rank"] === 0) {
         root_cluster_key = k;
       }
       biggestRank = Math.max(v["Rank"], biggestRank);
@@ -283,7 +250,7 @@ export function init3Dgraphics(element, data) {
 
     const max_branching = compMaxBranching(data, root_cluster_key);
 
-    var cylinders = {};
+    //var cylinders = {};
 
     const firstHeight = biggestRank * 10 / 2 + 10;
     const firstStartPoint = new Point(0, firstHeight, 0);
