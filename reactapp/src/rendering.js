@@ -163,8 +163,6 @@ export function init3Dgraphics(element, data) {
     var tuple = Object.freeze({ id: id, prevPoint: prevPointFirst, point: pointFirst });
     var stack = [ tuple ];
 
-    var all = Object.keys(data).length;
-    var count = 0;
 
     while (stack.length > 0) {
       const stackElement = stack.pop();
@@ -172,10 +170,6 @@ export function init3Dgraphics(element, data) {
       const prevPoint = stackElement.prevPoint;
       const point = stackElement.point;
 
-      count += 1;
-      console.log(count, " of ", all);
-
-      data[current]["Visualised"] = true;
       var cluster = data[current];
       const childCount = cluster["DescCount"];
 
@@ -274,6 +268,7 @@ export function init3Dgraphics(element, data) {
   }
 
   function processClusters(scene, data) {
+    console.log(data);
 
     var root_cluster_key = undefined;
     var maxCluster = 1;

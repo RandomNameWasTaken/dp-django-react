@@ -55,14 +55,12 @@ export default class LoadJson extends React.Component {
     };
 
     render() { 
-        console.log(this.state.value);
-
         if (this.state.value === StateApp.App) {
-            return <App />;
+          return <App />;
         }
 
         if (this.state.value === StateApp.Visualise) {
-            return <Visualise fileData={this.state.resultData} />;
+          return <Visualise fileData={this.state.resultData} />;
         }        
 
         return (

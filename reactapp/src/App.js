@@ -61,8 +61,6 @@ class App extends React.Component {
               <input type="submit" value={text1} onClick={this.handleButton1}/>
               <input type="submit" value={text2} onClick={this.handleButton2}/>
               <input type="submit" value={text3} onClick={this.handleButton3} />
-              <input type="submit" value="Visualize - todo delete" onClick={this.handleButton4} />
-
             </form>
           </div>
         </div>

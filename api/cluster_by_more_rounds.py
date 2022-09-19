@@ -44,7 +44,6 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
                 continue
 
             if node_info[curr_node]['rank'] == node_info[child]['rank']:
-                print("same rank")
                 curr_cluster.add_node(child)
                 stack.append(child);
                 node_info[child]['cluster'] = curr_cluster
@@ -52,8 +51,6 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
 
 
             if node_info[curr_node]['rank'] + 1 == node_info[child]['rank']:
-                print("+1 rank")
-
                 new_cluster = ClusterNode(node_info[child]['rank'], child)
                 stack.append(child)
                 new_cluster.anc = curr_cluster
@@ -62,9 +59,10 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
                 continue
         
         node_check = stack[-1]
+        # Ak je node "black" 
         if node_check == curr_node:
+
             ancestors = anc_function(curr_node, number_of_nodes, nodes, regulations, updates)
-            print("ancestors")
             ancestors_by_ranks = {}
             for anc in ancestors:
                 ancestor_key = get_id(anc)
@@ -97,7 +95,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
                             if node_info[node]['cluster'].anc == old_cluster:
                                 node_info[node]['cluster'].anc = cl
 
-                        cl.join_cluster(node_info[ancestor]['cluster'])
+                        cl.join_cluster(old_cluster)
             stack.pop()
 
 
@@ -105,6 +103,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
     clusters = set()
     for node in node_info:
         if 'cluster' not in node_info[node]:
+            stack.push(node)
             continue # TODO divne toto by malo byt spocitane?
         clusters.add(node_info[node]['cluster'])
 

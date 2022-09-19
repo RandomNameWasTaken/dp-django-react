@@ -141,6 +141,7 @@ export default class LoadAeon extends React.Component {
         if (this.state.value === StateApp.Visualise) {
 
           // Ask to save data
+          console.log(this.state.clusters);
           const clusters_parsed = JSON.parse(this.state.clusters);
 
           if (this.state.asked === true) {
