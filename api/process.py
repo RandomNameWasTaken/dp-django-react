@@ -41,12 +41,9 @@ def get_ancestors_of_node_sync(state_id, number_of_nodes, nodes, regulations, up
     curr_state = get_name(state_id, number_of_nodes)
 
     ancestors = []
-    print('get_ancestors_of_node_sync - start')
-
     c = 0
     total = 2**number_of_nodes
     while c <= total:
-        print(c)
         state_to_connect = get_name(c, number_of_nodes)
         old_state = get_name(c, number_of_nodes)
 
@@ -67,9 +64,6 @@ def get_ancestors_of_node_sync(state_id, number_of_nodes, nodes, regulations, up
             ancestors.append(old_state)
             
         c += 1
-
-    print(ancestors)
-    print('get_ancestors_of_node_sync - end')
     return frozenset(ancestors)
 
 

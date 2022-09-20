@@ -25,7 +25,6 @@ def get_name(number, nodes):
     return res
 
 def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, semantics):
-    print(node_info)
     anc_function = get_ancestor_function(semantics)
     child_function = get_generate_function(semantics)
 
@@ -33,9 +32,11 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
     first_cluster = ClusterNode(0, root)
     node_info[root]['cluster'] = first_cluster
 
+    count = 0
     while stack:
         curr_node = stack[-1]
         curr_cluster = node_info[curr_node]['cluster']
+        count += 1
 
         children = child_function(curr_node, number_of_nodes, nodes, regulations, updates)
         for child in children:
@@ -45,8 +46,8 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
 
             if node_info[curr_node]['rank'] == node_info[child]['rank']:
                 curr_cluster.add_node(child)
-                stack.append(child);
                 node_info[child]['cluster'] = curr_cluster
+                stack.append(child)
                 continue
 
 
@@ -66,8 +67,13 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
             ancestors_by_ranks = {}
             for anc in ancestors:
                 ancestor_key = get_id(anc)
-                if ancestor_key not in node_info or 'cluster' not in node_info[ancestor_key]:
+                if ancestor_key not in node_info:
                     continue
+                    
+                if 'cluster' not in node_info[ancestor_key]:
+                    curr_cluster.add_node(ancestor_key)
+                    node_info[ancestor_key]['cluster'] = curr_cluster
+                    stack.append(ancestor_key)
 
                 r = node_info[ancestor_key]['rank']
                 if r in ancestors_by_ranks:
@@ -103,7 +109,6 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
     clusters = set()
     for node in node_info:
         if 'cluster' not in node_info[node]:
-            stack.push(node)
             continue # TODO divne toto by malo byt spocitane?
         clusters.add(node_info[node]['cluster'])
 
