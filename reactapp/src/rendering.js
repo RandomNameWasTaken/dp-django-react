@@ -74,9 +74,19 @@ export function init3Dgraphics(element, data) {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  function createLine(scene, id, startPoint, endPoint, currRadius, nextRadius) {
-    const color = new THREE.Color( 0xffffff );
-    color.setHex( Math.random() * 0xffffff );
+  function calcColor(max, val) {
+    const min = 0
+    var minHue = 240, maxHue=0;
+    var curPercent = (val - min) / (max-min);
+    var colString = "hsl(" + ((curPercent * (maxHue-minHue) ) + minHue) + ",70%,50%)";
+    return colString;
+  }
+
+  function createLine(scene, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max) {
+    const color = new THREE.Color( calcColor(rank_max, rank) );
+    //color.setHex(rank/10 * 0xffffff );
+   // color.setHex(rank/10 * 0xffffff );
+
 
     var cylinderMesh = function( startPoint, endPoint, midPoint, currRadius, nextRadius, color ) {
       /* edge from X to Y */
@@ -120,7 +130,7 @@ export function init3Dgraphics(element, data) {
 
   // prevPoint, point - upper and downer middle points of cylinder
   // dirPoint - point to which direction of cylinder (dir vector) should go 
-  function clustering(scene, data, id, max_branching, branch_count, prevPointFirst, pointFirst) {
+  function clustering(scene, data, id, max_branching, branch_count, prevPointFirst, pointFirst, biggestRank) {
 
     if (id === undefined) {
       console.log("Id is undefined in clustering");
@@ -145,7 +155,7 @@ export function init3Dgraphics(element, data) {
         childsChildCount += data[cluster["Desc"][i]]["NodeCount"];
       }
 
-      createLine(scene, current, prevPoint, point, cluster.NodeCount, childsChildCount);
+      createLine(scene, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank);
 
       const prevPointPointDist = Math.sqrt((point.x - prevPoint.x) * (point.x - prevPoint.x) + (point.y - prevPoint.y)
                               * (point.y - prevPoint.y) + (point.z - prevPoint.z) * (point.z - prevPoint.z));
@@ -256,7 +266,7 @@ export function init3Dgraphics(element, data) {
     const firstStartPoint = new Point(0, firstHeight, 0);
     const firstEndPoint = new Point(0, firstHeight - 10, 0);
 
-    clustering(scene, data, root_cluster_key, max_branching, 1, firstStartPoint, firstEndPoint);
+    clustering(scene, data, root_cluster_key, max_branching, 1, firstStartPoint, firstEndPoint, biggestRank);
 
     /*
     gui.addColor(options, 'sphereColor').onChange(function(e) {
