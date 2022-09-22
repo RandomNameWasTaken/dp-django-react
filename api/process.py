@@ -20,7 +20,7 @@ def create_nodes_of_state_space(number_of_nodes):
     return state_space_ids
 
 
-def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, regulations, updates):
+def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, regulations, updates, node_info):
     curr_state = get_name(state_id, number_of_nodes)
 
     ancestors = []
@@ -33,41 +33,20 @@ def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, regulations, u
         new_state = pot_ancestor[:idx] + str(int(new_val)) + pot_ancestor[idx + 1:]
        
         if new_state == curr_state:
-            ancestors.append(pot_ancestor)
+            anc_id = get_id(pot_ancestor)
+            ancestors.append(anc_id)
 
     return frozenset(ancestors)
+
             
-def get_ancestors_of_node_sync(state_id, number_of_nodes, nodes, regulations, updates):
-    curr_state = get_name(state_id, number_of_nodes)
+def get_ancestors_of_node_sync(state_id, number_of_nodes, nodes, regulations, updates, node_info):
+    if 'anc' not in node_info[state_id]:
+        return {}
 
-    ancestors = []
-    c = 0
-    total = 2**number_of_nodes
-    while c <= total:
-        state_to_connect = get_name(c, number_of_nodes)
-        old_state = get_name(c, number_of_nodes)
-
-        accept = True
-        for node in nodes:
-            update = nodes[node]
-            indx_of_node_in_state = update
-
-            new_val = updates[update].eval(old_state, None) # None for parametrization
-            state_to_connect = state_to_connect[:indx_of_node_in_state] + str(int(new_val)) + state_to_connect[indx_of_node_in_state + 1:]
-
-            # early break - if begging of children is not same as curr_state - do not compute rest
-            if str(int(new_val)) != curr_state[indx_of_node_in_state]:
-                accept = False
-                break
-
-        if accept:
-            ancestors.append(old_state)
-            
-        c += 1
-    return frozenset(ancestors)
+    return frozenset(node_info[state_id]['anc'])
 
 
-def generate_connection_for_node_async(state_id, number_of_nodes, nodes, regulations, updates):
+def generate_connection_for_node_async(state_id, number_of_nodes, nodes, regulations, updates, node_info = {}):
 
     connections = set()
     curr_state = get_name(state_id, number_of_nodes)
@@ -92,16 +71,14 @@ def generate_connection_for_node_async(state_id, number_of_nodes, nodes, regulat
     # set namiesto arr of connections
     children = frozenset(connections)
 
-    return children 
+    return children
 
 
-def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, regulations, updates):
+def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, regulations, updates, node_info = {}):
     connections = set()
     state_to_connect = get_name(state_id, number_of_nodes)
     old_state = get_name(state_id, number_of_nodes)
 
-
-    params = {}
     children = set()
     for node in nodes:
         update = nodes[node]
@@ -110,196 +87,20 @@ def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, regulati
         new_val = updates[update].eval(old_state, None) # None for parametrization
         state_to_connect = state_to_connect[:indx_of_node_in_state] + str(int(new_val)) + state_to_connect[indx_of_node_in_state + 1:]
 
-    if len(params) > 0:
-        potential_results_old = set()
-        potential_results_new = { (state_to_connect, 1) } 
-        no_params = 0
-        for indx in params:
-            potential_results_old = potential_results_new
-            potential_results_new = set()
-            for val in params[indx]:
-                count = params[indx][val]
+    state_to_connect_id = get_id(state_to_connect)
+    connections.add(state_to_connect_id)
 
-                for st, c_old in potential_results_old: 
-                    pot_res = st[:indx] + str(int(val)) + st[indx + 1:]
-                    potential_results_new.add((pot_res, count * c_old))
+    if node_info != {}:
+        if 'anc' in node_info[state_to_connect_id]:
+            node_info[state_to_connect_id]['anc'].add(state_id)
+        else:
+            node_info[state_to_connect_id]['anc'] = { state_id }
 
-        for (_, count) in potential_results_new:
-            no_params += count
-
-        if old_state in potential_results_new:
-            potential_results_new.remove(old_state)
-
-        children = frozenset(connections)
-
-    else:
-        state_to_connect_id = get_id(state_to_connect)
-        connections.add(state_to_connect_id)
-
-        # set namiesto arr of connections
-        children = frozenset(connections)
+    # set namiesto arr of connections
+    children = frozenset(connections)
 
     return children
 
-
-def generate_connections_async(state_space_ids, nodes, number_of_nodes, updates, regulations):
-    # GENERATE CONNECTIONS BETWEEN NODES OF STATE SPACE
-
-    number_of_updates = len(updates.keys())
-
-    state_space = {}
-    ancestors = {}
-
-    for state_id in state_space_ids:
-        ancestors[state_id] = set()
-
-    functions_opt = {} # Pre parametrizaciu predpocitane vsetky moznosti
-
-    for state_id in state_space_ids:
-        connections = set()
-        state = get_name(state_id, number_of_nodes)
-
-
-        for node in nodes:
-            update = nodes[node]
-            indx_of_node_in_state = update  # this value is going to be changed
-
-            if update not in updates:
-                # Parametrization NO UPDATE
-                
-                reg_len = len(regulations[update])
-                regulation_keys = sorted(regulations[update].keys())
-
-                generate_functions_for_len(functions_opt, reg_len)
-
-                same_as_preveious = True
-                prev_state_to_connect_id = None
-                for functions in functions_opt[reg_len]:
-                    new_val = None
-                    i = 0
-                    for variable in regulation_keys:
-
-                        fun_node = get_neg_function(regulations, update, variable)
-                        val      = fun_node(int(state[variable]) == 1)
-
-                        if new_val is None:
-                            new_val  = val
-                            continue
-
-                        fun_char = functions[i]
-                        fun = (lambda x, y: x and y) if fun_char == '1' else (lambda x, y: x or y)
-                        new_val = fun(new_val, val)
-
-                    i += 1
-
-                    state_to_connect = state[:indx_of_node_in_state] + str(int(new_val)) + state[indx_of_node_in_state + 1:]
-                    state_to_connect_id = get_id(state_to_connect)
-
-                    if (state_to_connect == state):
-                        same_as_preveious = same_as_preveious and (state_to_connect_id == prev_state_to_connect_id or prev_state_to_connect_id is None)
-                        prev_state_to_connect_id = state_to_connect_id
-                        continue
-                    parametrization[functions] = state_to_connect_id
-
-                    ancestors[state_to_connect_id].add( state_id )
-                    #ancestors[state_to_connect_id] += 1
-
-                    same_as_preveious = same_as_preveious and (state_to_connect_id == prev_state_to_connect_id or prev_state_to_connect_id is None)
-                    prev_state_to_connect_id = state_to_connect_id
-
-
-                if same_as_preveious and prev_state_to_connect_id is not None:
-
-                    if prev_state_to_connect_id != state_id:
-                        connections.add(prev_state_to_connect_id)
-                    #parametrization = {}
-
-
-                continue
-
-            new_val = updates[update].eval(state, None) # None for parametrization
-            state_to_connect = state[:indx_of_node_in_state] + str(int(new_val)) + state[indx_of_node_in_state + 1:]
-
-            if state_to_connect == state:
-                continue
-
-            state_to_connect_id = get_id(state_to_connect)
-            connections.add(state_to_connect_id)
-
-            ancestors[state_to_connect_id].add( state_id )
-            #ancestors[state_to_connect_id] += 1
-
-        # set namiesto arr of connections
-        if state_id in state_space:
-            state_space[state_id]['children'] = frozenset(connections)
-        else:
-            state_space[state_id] = { 'children' : frozenset(connections) }
-
-    gc.collect()
-
-    return (state_space, ancestors)
-
-def generate_connections_sync(state_space_ids, nodes, number_of_nodes, updates, regulations):
-    # GENERATE CONNECTIONS BETWEEN NODES OF STATE SPACE
-
-    number_of_updates = len(updates.keys())
-
-    state_space = {}
-    ancestors = {}
-
-    for state_id in state_space_ids:
-        ancestors[state_id] = set()
-
-    functions_opt = {} # Pre parametrizaciu predpocitane vsetky moznosti
-
-    for state_id in state_space_ids:
-        connections = set()
-        state_to_connect = get_name(state_id, number_of_nodes)
-        old_state = get_name(state_id, number_of_nodes)
-
-
-        params = {}
-        for node in nodes:
-            update = nodes[node]
-            indx_of_node_in_state = update  # this value is going to be changed
-
-            new_val = updates[update].eval(old_state, None) # None for parametrization
-            state_to_connect = state_to_connect[:indx_of_node_in_state] + str(int(new_val)) + state_to_connect[indx_of_node_in_state + 1:]
-
-        if len(params) > 0:
-            potential_results_old = set()
-            potential_results_new = { (state_to_connect, 1) } 
-            no_params = 0
-            for indx in params:
-                potential_results_old = potential_results_new
-                potential_results_new = set()
-                for val in params[indx]:
-                    count = params[indx][val]
-
-                    for st, c_old in potential_results_old: 
-                        pot_res = st[:indx] + str(int(val)) + st[indx + 1:]
-                        potential_results_new.add((pot_res, count * c_old))
-
-            for (_, count) in potential_results_new:
-                no_params += count
-
-            if old_state in potential_results_new:
-                potential_results_new.remove(old_state)
-
-        else:
-            state_to_connect_id = get_id(state_to_connect)
-            connections.add(state_to_connect_id)
-            ancestors[state_to_connect_id].add( state_id )
-
-            # set namiesto arr of connections
-            if state_id in state_space:
-                state_space[state_id]['children'] = frozenset(connections)
-            else:
-                state_space[state_id] = { 'children' : frozenset(connections) }
-
-    gc.collect()
-
-    return (state_space, ancestors)
 
 def generate_functions_for_len(functions_opt, length):
     if length in functions_opt:

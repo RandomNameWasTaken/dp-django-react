@@ -36,7 +36,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
         (curr_node, children_comp) = stack[-1]
         curr_cluster = node_info[curr_node]['cluster']
 
-        children = child_function(curr_node, number_of_nodes, nodes, regulations, updates) if children_comp == None else children_comp
+        children = child_function(curr_node, number_of_nodes, nodes, regulations, updates, node_info) if children_comp == None else children_comp
         stack[-1] = (curr_node, children)
         for child in children:
 
@@ -61,10 +61,9 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
         # Ak je node "black" 
         if node_check == curr_node:
 
-            ancestors = anc_function(curr_node, number_of_nodes, nodes, regulations, updates)
+            ancestors = anc_function(curr_node, number_of_nodes, nodes, regulations, updates, node_info)
             ancestor_by_ranks = {} # To cluster ancestors with same rank
-            for anc in ancestors:
-                ancestor_key = get_id(anc)
+            for ancestor_key in ancestors:
                 if ancestor_key not in node_info:
                     continue
                     
