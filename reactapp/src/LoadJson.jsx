@@ -23,7 +23,7 @@ export default class LoadJson extends React.Component {
         reader.readAsText(file,'UTF-8');
      
         reader.addEventListener("load", e => {
-            this.setState({ resultData : JSON.parse(reader.result) });
+            this.setState({ resultData : JSON.parse([ reader.result ]) });
             this.setState({ value : StateApp.Visualise });
         });
     };
@@ -60,7 +60,7 @@ export default class LoadJson extends React.Component {
         }
 
         if (this.state.value === StateApp.Visualise) {
-          return <Visualise fileData={this.state.resultData} />;
+          return <Visualise fileData={[ this.state.resultData ]} />;
         }        
 
         return (

@@ -29,7 +29,9 @@ def getData(request):
     state = int(state, 2)
 
     option = request.query_params.get('option')
-    semantics = request.query_params.get('semantics')
+
+    semantics = request.query_params.get('semantics').split(',');
+    
 
     clusters_json = compute_clusters(result["nodes"], result["regulations"], result["updates"], semantics, option, state)
     return Response(clusters_json)

@@ -13,13 +13,13 @@ export function init3Dgraphics(element, data) {
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color( 0xd3d3d3 );
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+  const camera = new THREE.PerspectiveCamera(75, element.width / element.height, 0.1, 1000)
   const renderer = new THREE.WebGLRenderer({
     canvas: element,
   });
 
   renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize(window.innerWidth, window.innerHeight); // full size
+  renderer.setSize(element.width, element.height); // full size
   camera.position.setZ(30); // for better perspective
   renderer.sortObjects = false;
   renderer.render(scene, camera);
@@ -47,9 +47,9 @@ export function init3Dgraphics(element, data) {
   scene.add(lightHelper, gridHelper);
 
   window.addEventListener('resize', function() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = element.width / element.height;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth);
+    renderer.setSize(element.width);
   });
 
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -71,9 +71,9 @@ export function init3Dgraphics(element, data) {
   renderer.setAnimationLoop(animate);
 
   window.addEventListener('resize', function() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = element.width / element.width
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(element.width, element.width);
   });
 
   function calcColor(max, val) {

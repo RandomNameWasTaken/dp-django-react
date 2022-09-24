@@ -20,26 +20,39 @@ def get_nodes(file_data):
 
     return result
 
-def compute_clusters(nodes, regulations, updates, semantics_num, option, state):
-    semantics = None
-    if int(semantics_num) == 1:
-        semantics = Semantics.ASYNC
-        
-    if int(semantics_num) == 2:
-        semantics = Semantics.SYNC
+def compute_clusters(nodes, regulations, updates, semantics_arr, option, state):
 
-    if semantics is None:
-        print("No semantics")
+    result = {}
+    if option == '1':
+        for semantic in semantics_arr:
+            print(semantic)
 
-    clusters = []
-    if option == '1':    
-        number_of_nodes = len(nodes)
-        clusters = cluster(state, number_of_nodes, nodes, regulations, updates, semantics)
+            semantics = None
+            if semantic == 'async':
+                semantics = Semantics.ASYNC
 
+            if semantic == 'sync':
+                semantics = Semantics.SYNC
+
+            number_of_nodes = len(nodes)
+            clusters = cluster(state, number_of_nodes, nodes, regulations, updates, semantics)
+
+            result[semantic] = clusters
     else:
-        counting = state_space_proc(state_space)
-        clusters = cluster_whole_space(state_space, counting)
+        for semantic in semantics_arr:
+    
+            if semantic == 'async':
+                semantics = Semantics.ASYNC
 
-    clusters_json = create_json(clusters)
-    return clusters_json
+            if semantic == 'sync':
+                semantics = Semantics.SYNC
+
+            counting = state_space_proc(state_space)
+            clusters = cluster_whole_space(state_space, counting)
+            result[semantic] = clusters
+
+
+    result_json = create_json(result)
+    print(result_json)
+    return result_json
 

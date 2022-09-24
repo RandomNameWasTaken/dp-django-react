@@ -3,6 +3,7 @@ import App from './App';
 import { StateApp } from './StateApp.ts';
 import Visualise from './Visualise';
 import axios from "axios";
+import { TubeBufferGeometry } from 'three';
 
 
 export default class LoadAeon extends React.Component {
@@ -10,7 +11,6 @@ export default class LoadAeon extends React.Component {
         value : this.props.value || StateApp.LoadAeon,
         selectedFile: null,
 
-        semantics: null,
         option: null,
 
         json_data:null,
@@ -85,7 +85,10 @@ export default class LoadAeon extends React.Component {
 
     handleSemanticsButton = event => {
       event.preventDefault();
-      this.setState({ semantics : this.state.async ? 1 : 2 });
+      if (!this.state.sync && !this.state.async) {
+        // TODO chyba aspon jedno musi byt
+        return;
+      }
       this.setState({ option : this.state.node ? 1 : 2 });
     };
 
@@ -139,6 +142,7 @@ export default class LoadAeon extends React.Component {
 
           // Ask to save data
           const clusters_parsed = JSON.parse(this.state.clusters);
+          console.log(clusters_parsed);
 
           if (this.state.asked === true) {
          //   console.log(clusters_parsed);
@@ -157,12 +161,12 @@ export default class LoadAeon extends React.Component {
         
         if (this.state.value === StateApp.Config) {
 
-          if (this.state.semantics === null) {
+          if (this.state.option === null) {
             return (
             <form>
-              <input type="radio" id="async" name="semantics" value="1" onChange={event => this.setState({async : true, sync: false})}/>
+              <input type="checkbox" id="async" name="semantics" value="1" onChange={event => this.setState({async : true})}/>
               <label for="async">Async</label>
-              <input type="radio" id="sync" name="semantics" value="2" onChange={event => this.setState({sync : true, async: false})}/>
+              <input type="checkbox" id="sync" name="semantics" value="2" onChange={event => this.setState({sync : true})}/>
               <label for="sync">Sync</label>
               <br/>
               <input type="radio" id="node" name="option" value="1" onChange={event => this.setState({node : true, whole: false})}/>
@@ -218,7 +222,7 @@ export default class LoadAeon extends React.Component {
 
           if (this.state.compute) {
             const nodes = this.state.checked_nodes.join(',');
-            const params = "semantics=" + this.state.semantics
+            const params = "semantics=" + (this.state.async ? (this.state.sync ? "async,sync" : "async") : "sync")
                           + "&option=" + this.state.option
                           + (nodes !== "" ? "&nodes=" + nodes : "");
 

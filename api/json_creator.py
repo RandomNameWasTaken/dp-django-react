@@ -1,4 +1,23 @@
-def create_json(clusters):
+def create_json(result):
+    json = ''
+    for sem in result:
+        if json != '':
+           json += ",\n"
+
+        json_cl = create_json_to_cluster(result[sem])
+
+        json += """
+        """ + '"' + sem + '"' + """: 
+            """ + json_cl + """
+        """;
+    
+    json = "{\n" + json + "\n}"
+
+    return json
+        
+
+
+def create_json_to_cluster(clusters):
     json = ''
 
     clusters = list(clusters)
@@ -21,14 +40,18 @@ def create_json(clusters):
 
         json += """
     """ + name + """:
-    {
-        "Rank": """ + str(cl.rank) + """,
-        "NodeCount": """ + str(len(cl.nodes)) + """,
-        "DescCount": """ + str(len(cl.desc)) + """,
-        "Desc": [ """ + descs + """ ]
-    }"""
+            {
+                "Rank": """ + str(cl.rank) + """,
+                "NodeCount": """ + str(len(cl.nodes)) + """,
+                "DescCount": """ + str(len(cl.desc)) + """,
+                "Desc": [ """ + descs + """ ]
+            }"""
 
-    json = "{\n" + json + "\n}"
+    json = """
+    {
+        """ + json + """
+    }
+    """
 
     return json
 
