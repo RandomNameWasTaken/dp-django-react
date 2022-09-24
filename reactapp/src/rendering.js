@@ -9,6 +9,8 @@ export function init3Dgraphics(element, data) {
     return false;
   }
 
+  const CYLINDER_HEIGHT = 5;
+
   const scene = new THREE.Scene();
   scene.background = new THREE.Color( 0xd3d3d3 );
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -195,7 +197,7 @@ export function init3Dgraphics(element, data) {
         const branch_factor = 2 - (1/max_branching * branch_count);
         xPos = Math.cos(theta) * childsChildCount * branch_factor; // TODO pronasobit constantov pro urceni mensiho/vetsiho uhlu - v ramci hlbky stromu? 
         zPos = Math.sin(theta) * childsChildCount * branch_factor; // TODO
-        const newEndPoint = new Point(newStartPoint.x + xPos, newStartPoint.y - 10, newStartPoint.z + zPos);
+        const newEndPoint = new Point(newStartPoint.x + xPos, newStartPoint.y - CYLINDER_HEIGHT, newStartPoint.z + zPos);
       
           //dfsClustering(scene, data, cluster["Desc"][i], max_branching, branch_count + 1, newStartPoint, newEndPoint);
         tuple = Object.freeze({ id: cluster["Desc"][i], prevPoint: newStartPoint, point: newEndPoint });
@@ -262,9 +264,9 @@ export function init3Dgraphics(element, data) {
 
     //var cylinders = {};
 
-    const firstHeight = biggestRank * 10 / 2 + 10;
+    const firstHeight = biggestRank * CYLINDER_HEIGHT / 2 + CYLINDER_HEIGHT;
     const firstStartPoint = new Point(0, firstHeight, 0);
-    const firstEndPoint = new Point(0, firstHeight - 10, 0);
+    const firstEndPoint = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
 
     clustering(scene, data, root_cluster_key, max_branching, 1, firstStartPoint, firstEndPoint, biggestRank);
 
