@@ -80,7 +80,7 @@ export function init3Dgraphics(element, data) {
     const min = 0
     var minHue = 240, maxHue=0;
     var curPercent = (val - min) / (max-min);
-    var colString = "hsl(" + ((curPercent * (maxHue-minHue) ) + minHue) + ",70%,50%)";
+    var colString = "hsl(" + ((curPercent * (maxHue-minHue) ) + minHue) + ",65%,50%)";
     return colString;
   }
 
