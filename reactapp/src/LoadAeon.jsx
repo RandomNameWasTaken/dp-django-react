@@ -3,8 +3,36 @@ import App from './App';
 import { StateApp } from './StateApp.ts';
 import Visualise from './Visualise';
 import axios from "axios";
-import { TubeBufferGeometry } from 'three';
 
+let param_arguments = {};
+
+function get_select_fun(fun, name) {
+  return (
+    <select name={name} id={name} onClick={fun}>
+      <option value="&"> & </option>
+      <option value="|"> | </option>
+      <option value="->"> -&gt; </option>
+      <option value="<=>"> &lt;=&gt; </option>
+    </select>
+  );
+}
+
+function choose_parametrization(fun, args, regulations, nodes, name) {
+  var result = [];
+  args.forEach(function (arg, index) {
+    if (result.length > 0) {
+      result.push(get_select_fun(fun, name + "_" + index))
+    }
+
+    if (regulations[nodes[name]][nodes[arg]] === '-') {
+      result.push('!')
+    }
+
+    result.push(arg)
+  });
+
+  return result.map(arg => { return arg; });
+}
 
 export default class LoadAeon extends React.Component {
     state = {
@@ -22,11 +50,24 @@ export default class LoadAeon extends React.Component {
         compute: false,
         clusters: null,
         asked : false,
+
+        param_arguments: {},
     };
+  //  const [param_arguments, set_param_arguments] = useState();
 
     onFileChange = event => {
         // Update the state
         this.setState({ selectedFile: event.target.files[0] });
+    };
+
+    handleParams = (event) => {
+      const id_arr = event.currentTarget.id.split('_');
+      const name = id_arr[0];
+      const index = id_arr[1];
+
+      console.log(param_arguments);
+      param_arguments[name][index - 1] = "|";
+      console.log(param_arguments);
     };
 
     // On file upload (click the upload button)
@@ -49,6 +90,7 @@ export default class LoadAeon extends React.Component {
                 result_data.push(r_lines[i]);
               }
 
+              this.setState({ file_read : result_data });
               const result_data_joined = result_data.join(" %% ");
               document.cookie="resultData=" + result_data_joined + "; SameSite=None; Secure";
           });
@@ -97,6 +139,31 @@ export default class LoadAeon extends React.Component {
       this.render();
 
       this.setState({ compute : true });
+
+      if (this.state.params !== undefined) {
+        this.state.params.forEach((value, key) => {
+           
+          var args_concat = '';
+          var args = value["args"].split(',');
+          console.log("args ", param_arguments);
+          for (var i = 0; i < args.length; ++i) {
+            if (args_concat.length > 0) {
+              args_concat += " " + param_arguments[key][ i - 1 ] + " ";
+            }
+            args_concat += args[i];
+          }
+
+          const expresion_arr = value["expr"].split("___parametrization___");
+          var expr_snd = '';
+          if (expresion_arr.length > 1) {
+            expr_snd = expresion_arr[1];
+          }
+
+          const line = "$" + key + " : " + expresion_arr[0] + " " + args_concat + " " + expr_snd;
+          console.log(line);
+          this.state.file_read.push(line);
+        });
+      }
     };
 
     handleOnChange = (event, name) => {
@@ -133,7 +200,8 @@ export default class LoadAeon extends React.Component {
     }
 
 
-    render() { 
+    render() {
+      console.log(param_arguments);
         if (this.state.value === StateApp.MainApp) {
           return <App />;
         }
@@ -142,10 +210,8 @@ export default class LoadAeon extends React.Component {
 
           // Ask to save data
           const clusters_parsed = JSON.parse(this.state.clusters);
-          console.log(clusters_parsed);
 
           if (this.state.asked === true) {
-         //   console.log(clusters_parsed);
             return <Visualise fileData={clusters_parsed} />;
           }
           return (
@@ -181,8 +247,13 @@ export default class LoadAeon extends React.Component {
               axios
               .get("http://127.0.0.1:8000/get_nodes")
               .then(response => {
-                const nodes = JSON.parse(response.data);
-                this.setState({ nodes : nodes });
+                const result = JSON.parse(response.data);
+                this.setState({ nodes : result["nodes"] });
+
+                if (result["parametrization"] !== undefined) {
+                  this.setState({ params : new Map(Object.entries(result["parametrization"])), reguls : result["regulations"] });
+                }
+
               });
             return (
                 <h3>Getting nodes</h3>
@@ -190,37 +261,80 @@ export default class LoadAeon extends React.Component {
           }
 
           if (this.state.option === 1 && this.state.nodes && this.state.compute === false) {
+            var parametrization_selection;
+            if (this.state.params !== undefined) {
+  
+              var lis = [];
+              this.state.params.forEach((value, name) => {
+                const args = value["args"].split(',');
+                const choose_param = choose_parametrization(this.handleParams, args, this.state.reguls, this.state.nodes, name);
+  
+                if (param_arguments[name] === undefined) {
+                  console.log('xxxx');
+                  param_arguments[name] = args.map( arg => "&" );
+                  param_arguments[name].pop();
+                }
+  
+                const expresion_arr = value["expr"].split("___parametrization___");
+                var expr_snd = '';
+                if (expresion_arr.length > 1) {
+                  expr_snd = expresion_arr[1];
+                }
+  
+                lis.push(<li key={name}> {name}: {expresion_arr[0]}&nbsp;{choose_param}&nbsp;{expr_snd}</li>);
+              });
+  
+              parametrization_selection = <div className="App">
+                                            <h3>Select parametrizations</h3>
+                                              <ul>
+                                              {
+                                                lis.map(li => {
+                                                  return li;
+                                                })
+                                              }
+                                              </ul>
+                                          </div>
+            }
 
             if (!this.state.parsed_nodes_keys) {
               const nodes_keys = Object.keys(this.state.nodes);
               this.setState({parsed_nodes_keys : nodes_keys});
             }
 
+            const nodes_selection = <div className="App">
+                                      <h3>Select nodes</h3>
+                                        {this.state.parsed_nodes_keys.map(name => {
+                                          return (
+                                            <div>
+                                              <input
+                                                type="checkbox"
+                                                id={`custom-checkbox-${name}`}
+                                                name={name}
+                                                value={name}
+                                                onChange={ (event) => { this.handleOnChange(event, name) }}
+                                              />
+                                              <label htmlFor={`custom-checkbox-${name}`}>{name}</label>
+                                            </div>
+                                          );
+                                        })}
+                                    </div>;
+
             return (
-              <div className="App">
-                <h3>Select nodes</h3>
+              <div>
                 <form>
-                  {this.state.parsed_nodes_keys.map(name => {
-                    return (
-                      <div>
-                        <input
-                          type="checkbox"
-                          id={`custom-checkbox-${name}`}
-                          name={name}
-                          value={name}
-                          onChange={ (event) => { this.handleOnChange(event, name) }}
-                        />
-                        <label htmlFor={`custom-checkbox-${name}`}>{name}</label>
-                      </div>
-                    );
-                  })}
-                <input type="submit" value="Send" onClick={this.handleNodesButton} />
+                  {nodes_selection}
+                  {parametrization_selection}
+                  <input type="submit" value="Send" onClick={this.handleNodesButton} />
                 </form>
               </div>
             );
           }
 
           if (this.state.compute) {
+            console.log(this.state.file_read);
+            const result_data_joined = this.state.file_read.join(" %% ");
+            document.cookie = "resultData=" + result_data_joined + "; SameSite=None; Secure";
+
             const nodes = this.state.checked_nodes.join(',');
             const params = "semantics=" + (this.state.async ? (this.state.sync ? "async,sync" : "async") : "sync")
                           + "&option=" + this.state.option

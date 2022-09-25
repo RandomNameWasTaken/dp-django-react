@@ -15,7 +15,8 @@ def get_nodes(file_data):
     result = {
         "nodes" : nodes,
         "regulations" : regulations,
-        "updates" : updates
+        "updates" : updates, # not JSON serializable - expression
+        "parametrization" : parametrizations
     }
 
     return result
@@ -25,7 +26,6 @@ def compute_clusters(nodes, regulations, updates, semantics_arr, option, state):
     result = {}
     if option == '1':
         for semantic in semantics_arr:
-            print(semantic)
 
             semantics = None
             if semantic == 'async':
@@ -53,6 +53,5 @@ def compute_clusters(nodes, regulations, updates, semantics_arr, option, state):
 
 
     result_json = create_json(result)
-    print(result_json)
     return result_json
 

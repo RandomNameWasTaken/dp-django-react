@@ -9,9 +9,6 @@ class SimpleExpr(Expression):
         self.name = name
 
     def eval(self, state, parametrization):
-        if self.name == 'parametrization':
-            return parametrization
-
         return state[self.name] == '1'
 
 class NegExpr(Expression):

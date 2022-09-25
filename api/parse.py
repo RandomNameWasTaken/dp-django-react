@@ -9,10 +9,6 @@ from .helpers import *
 
 
 def get_simp_expr(c, vals, nodes, node_count):
-    if c == "parametrization":
-        expr = SimpleExpr("parametrization")
-        return (expr, node_count)
-
 
     neg = False
     if c[0] == "!":
@@ -55,14 +51,7 @@ def get_comp_expr(op, vals, nodes, node_count):
     return (CompExpr(expr1, expr2, fun, c2), node_count)
 
 
-def parse_rules(rules, nodes, node, node_count, r_param):
-    match = re.match(r_param, rules)
-
-    parametrization = ''
-    if match:
-        parametrization = match.group('parametrization')
-        rules = rules.replace(parametrization, 'parametrization')
-
+def parse_rules(rules, nodes, node, node_count):
     rules = rules.replace(")", " ) ")
     rules = rules.replace("(", " ( ")
 
@@ -77,7 +66,7 @@ def parse_rules(rules, nodes, node, node_count, r_param):
         else:
             (expr, node_count) = get_simp_expr(c, vals, nodes, node_count)
 
-    return (expr, node_count, parametrization)
+    return (expr, node_count)
 
 
 def parse(Lines):
@@ -87,6 +76,7 @@ def parse(Lines):
     r_regul = re.compile('^\s*(?P<regulator>\w+)\s*-(?P<kind>>|\|)\s*(?P<node>\w+)');
     r_param = re.compile('.*( |:)(?P<parametrization>(\w|_)+\(.+\))')
     r_begin_of_param = re.compile('(\w|_)+\(')
+    r_param_inside = re.compile('.*\((.*)\)')
 
     updates = {}
     nodes = {}
@@ -102,26 +92,23 @@ def parse(Lines):
             node = match.group('node')
             rules = match.group('rules')
 
-            (expr, node_count, parametrization) = parse_rules(rules, nodes, node, node_count, r_param)
+            param_match = re.match(r_param, rules)
+            if (param_match):
+                param = param_match.group('parametrization')
+                rules = rules.replace(param, '___parametrization___')
+
+                param_inside_match = re.match(r_param_inside, param)
+                param_arguments = []
+                for p in param_inside_match.group(1).split(','):
+                    param_arguments.append(p.strip())
+                
+                parametrizations[node] = { "expr" : rules , "args" : ','.join(param_arguments)}
+                continue
+
+            (expr, node_count) = parse_rules(rules, nodes, node, node_count)
 
             node_count = add_key(nodes, node, node_count)
             updates[nodes[node]] = expr
-
-            if parametrization:
-                parametrization = re.sub(r_begin_of_param, '', parametrization)
-                #parametrization = parametrization.replace('(', '')
-                parametrization = parametrization.replace(')', '')
-                parametrization = parametrization.replace(' ', '')
-
-                argument_nodes = parametrization.split(',')
-                arguments = []
-                for i in argument_nodes:
-                    node_count = add_key(nodes, i, node_count)
-                    arguments.append(nodes[i]);
-
-                
-                parametrizations[nodes[node]] = arguments 
-
 
             continue;
 
@@ -151,6 +138,12 @@ def parse(Lines):
 
 def read(Lines):
     (nodes, regulations, updates, parametrizations) = parse(Lines)
+
+    if len(nodes) != len(updates):
+        all_nodes = ','.join(nodes.keys())
+        for node in nodes:
+            if nodes[node] not in updates and node not in parametrizations:
+                parametrizations[node] = { "args" : all_nodes, "expr": "___parametrization___" }
 
     return (nodes, regulations, updates, parametrizations)
 

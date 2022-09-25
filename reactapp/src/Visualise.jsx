@@ -46,15 +46,11 @@ export default class Visualise extends React.Component {
             var index = 0;
             for (var key in fileData) {
 
-                var width = 200;
-                var height = 200;
+                var width = window_sizes.innerWidth;
+                var height =  window_sizes.innerHeight;
+                if (canvas_number > 1) {
 
-                if (canvas_number === 1) {
-                    width = window_sizes.innerWidth;
-                    height = window_sizes.innerHeight;
-                } else {
                     const division = Math.floor(canvas_number/2);
-
                     if (division <= 1) {
                         height = window_sizes.innerHeight;
                     } else {

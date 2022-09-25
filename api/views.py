@@ -43,6 +43,14 @@ def getNodes(request):
     aeon_text = aeon_text.split(" %%")
 
     result = get_nodes(aeon_text)
-    nodes_json = json.dumps(result["nodes"])
+    del result["updates"]
 
-    return Response(nodes_json)
+    if result["parametrization"] != {} :
+        json_result = json.dumps(result)
+        return Response(json_result)
+
+    del result["parametrization"]
+    del result["regulations"]
+
+    json_result = json.dumps(result)
+    return Response(json_result)
