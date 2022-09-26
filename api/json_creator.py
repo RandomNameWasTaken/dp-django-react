@@ -37,14 +37,19 @@ def create_json_to_cluster(clusters):
                 descs += ', '
             descs += '"' + d.get_name() + '"'
 
+        backs = ''
+        for b in cl.backs:
+            if backs != '':
+                backs += ', '
+            backs += '"' + b.get_name() + '"'
 
         json += """
     """ + name + """:
             {
                 "Rank": """ + str(cl.rank) + """,
                 "NodeCount": """ + str(len(cl.nodes)) + """,
-                "DescCount": """ + str(len(cl.desc)) + """,
-                "Desc": [ """ + descs + """ ]
+                "Desc": [ """ + descs + """ ],
+                "Backs": [ """ + backs + """ ]
             }"""
 
     json = """

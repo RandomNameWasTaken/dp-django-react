@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { Point } from './Point';
 
+
 export function init3Dgraphics(element, data) {
 
   if (data === undefined) {
@@ -77,6 +78,7 @@ export function init3Dgraphics(element, data) {
   });
 
   function calcColor(max, val) {
+    return "hsla(147, 0%, 50%, 1)";
     const min = 0
     var minHue = 240, maxHue=0;
     var curPercent = (val - min) / (max-min);
@@ -84,8 +86,8 @@ export function init3Dgraphics(element, data) {
     return colString;
   }
 
-  function createLine(scene, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max) {
-    const color = new THREE.Color( calcColor(rank_max, rank) );
+  function createLine(scene, data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max) {
+    const color = new THREE.Color( data[id]['color'] === undefined ? calcColor(rank_max, rank) : data[id]['color'] );
     //color.setHex(rank/10 * 0xffffff );
    // color.setHex(rank/10 * 0xffffff );
 
@@ -150,14 +152,14 @@ export function init3Dgraphics(element, data) {
       const point = stackElement.point;
 
       var cluster = data[current];
-      const childCount = cluster["DescCount"];
+      const childCount = cluster["Desc"].length;
 
       var childsChildCount = 0;
       for (var i = 0; i < cluster["Desc"].length; ++i) {
         childsChildCount += data[cluster["Desc"][i]]["NodeCount"];
       }
 
-      createLine(scene, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank);
+      createLine(scene, data, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank);
 
       const prevPointPointDist = Math.sqrt((point.x - prevPoint.x) * (point.x - prevPoint.x) + (point.y - prevPoint.y)
                               * (point.y - prevPoint.y) + (point.z - prevPoint.z) * (point.z - prevPoint.z));
@@ -206,6 +208,65 @@ export function init3Dgraphics(element, data) {
     }
   }
 
+  function getIntersection(setA, setB) {
+    const intersection = new Set(
+      [...setA].filter(element => setB.has(element))
+    );
+  
+    return intersection;
+  }
+
+  function _getSCCset(node, data, childs) {
+    var result = new Set();
+
+    var queue = [node]
+    while (queue.length > 0) {
+      var curr_node = queue.shift();
+      result.add(curr_node);
+
+      for (var i = 0; i < data[curr_node][childs].length; ++i) {
+        queue.push(data[curr_node][childs][i]);
+      }
+    }
+    return result;
+  }
+
+  function isStability(scc) {
+    return scc.length === 1;
+  }
+
+  function isOscillation(scc, data) {
+    scc.forEach((item) => {
+      if (data[item]["NodeCount"] !== 1 || data[item]["Desc"].length !== 1) {  // TODO overit
+        return false;
+      }
+    });
+    return true;
+  }
+
+  function compSCC(node, data) {
+
+    const normal = _getSCCset(node, data, 'Desc');
+    const reverted = _getSCCset(node, data, 'Backs');
+
+    const scc = Array.from(getIntersection(normal, reverted));
+
+    console.log(scc);
+
+    var color = "hsla(187, 90%, 50%, 0.53)";
+    if (isOscillation(scc, data)) {
+      color = "hsla(100, 90%, 50%, 0.53)";
+    }
+    if (isStability(scc)) {
+      color = "hsla(295, 90%, 50%, 0.37)";
+    }
+
+    scc.forEach((item) => {
+      console.log(item, " colored with ", color);
+      data[item]['color'] = color;
+    });
+  }
+
   function compMaxBranching(data, key) {
 
     let stack = [ key ];
@@ -222,7 +283,8 @@ export function init3Dgraphics(element, data) {
       }
 
       var count_black = 0;
-      for (var i = 0; i < data[current]["DescCount"]; ++i) {
+      const desc_count = data[current]["Desc"].length;
+      for (var i = 0; i < desc_count; ++i) {
         if (colors[data[current]["Desc"][i]] === undefined) {
           stack.push(data[current]["Desc"][i]);
         } 
@@ -233,13 +295,18 @@ export function init3Dgraphics(element, data) {
         }
       }
 
-      if (count_black === data[current]["DescCount"]) {
+      if (count_black === desc_count) {
         colors[current] = 'B';
         stack.pop();
 
-        if (data[current]["DescCount"] > 1) {
+        if (desc_count > 1) {
           maximums[current] += 1;
         }
+      }
+
+      // Predpocitat obratenu siet, pustit BFS na check SCC
+      if (desc_count === 0) {
+        compSCC(current, data)
       }
     }
 
@@ -247,7 +314,6 @@ export function init3Dgraphics(element, data) {
   }
 
   function processClusters(scene, data) {
-    console.log(data);
 
     var root_cluster_key = undefined;
     var maxCluster = 1;

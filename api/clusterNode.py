@@ -6,6 +6,7 @@ class ClusterNode:
         self.desc = set()
         self.rank = rank
         self.anc = None
+        self.backs = set()
 
     def get_name(self):
       #  return ",".join([ str(i) for i in self.nodes ])

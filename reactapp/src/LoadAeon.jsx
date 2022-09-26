@@ -65,9 +65,7 @@ export default class LoadAeon extends React.Component {
       const name = id_arr[0];
       const index = id_arr[1];
 
-      console.log(param_arguments);
       param_arguments[name][index - 1] = "|";
-      console.log(param_arguments);
     };
 
     // On file upload (click the upload button)
@@ -145,7 +143,6 @@ export default class LoadAeon extends React.Component {
            
           var args_concat = '';
           var args = value["args"].split(',');
-          console.log("args ", param_arguments);
           for (var i = 0; i < args.length; ++i) {
             if (args_concat.length > 0) {
               args_concat += " " + param_arguments[key][ i - 1 ] + " ";
@@ -160,7 +157,6 @@ export default class LoadAeon extends React.Component {
           }
 
           const line = "$" + key + " : " + expresion_arr[0] + " " + args_concat + " " + expr_snd;
-          console.log(line);
           this.state.file_read.push(line);
         });
       }
@@ -201,7 +197,6 @@ export default class LoadAeon extends React.Component {
 
 
     render() {
-      console.log(param_arguments);
         if (this.state.value === StateApp.MainApp) {
           return <App />;
         }
@@ -270,7 +265,6 @@ export default class LoadAeon extends React.Component {
                 const choose_param = choose_parametrization(this.handleParams, args, this.state.reguls, this.state.nodes, name);
   
                 if (param_arguments[name] === undefined) {
-                  console.log('xxxx');
                   param_arguments[name] = args.map( arg => "&" );
                   param_arguments[name].pop();
                 }
@@ -331,7 +325,6 @@ export default class LoadAeon extends React.Component {
           }
 
           if (this.state.compute) {
-            console.log(this.state.file_read);
             const result_data_joined = this.state.file_read.join(" %% ");
             document.cookie = "resultData=" + result_data_joined + "; SameSite=None; Secure";
 

@@ -57,12 +57,7 @@ export default class Visualise extends React.Component {
                         height =  Math.floor(window_sizes.innerHeight/2);
                     }
                     width = Math.floor(window_sizes.innerWidth / (division + 1));
-                    console.log("width", width);
-
-                    console.log("height", height);
                 }
-
-                console.log("index", index);
 
                 canvases.push(React.createElement('canvas', { id : "canvas" + index, width: width, height: height }));
                 index += 1;
@@ -83,8 +78,6 @@ export default class Visualise extends React.Component {
                 const data = fileData[key];
 
                 const canvas = document.getElementById("canvas" + index);
-
-                console.log(canvas);
                 init3Dgraphics(canvas, data);
 
                 index += 1;

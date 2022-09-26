@@ -41,6 +41,8 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
         for child in children:
 
             if 'cluster' in node_info[child]:
+                if node_info[child]['rank'] < node_info[curr_node]['rank']:
+                    node_info[curr_node]['back'].add(child)
                 continue
 
             if node_info[curr_node]['rank'] == node_info[child]['rank']:
@@ -105,7 +107,12 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
         if 'cluster' not in node_info[node]:
             print("Node without cluster: " + str(node))
             continue # TODO divne toto by malo byt spocitane?
-        clusters.add(node_info[node]['cluster'])
+
+        cluster = node_info[node]['cluster']
+        for backs in node_info[node]['back']:
+            cluster.backs.add(node_info[backs]['cluster'])
+        
+        clusters.add(cluster)
 
     return clusters
 
@@ -130,7 +137,7 @@ def rank_by_path(root, rank, number_of_nodes, nodes, regulations, updates, seman
 
     queue = deque()
     queue.append(root)
-    ranks = { root : { 'rank' : rank } }
+    ranks = { root : { 'rank' : rank, 'back' : set() } }
 
     while queue:
         node = queue.popleft()
@@ -138,8 +145,7 @@ def rank_by_path(root, rank, number_of_nodes, nodes, regulations, updates, seman
         children = generate_fun(node, number_of_nodes, nodes, regulations, updates) 
         for child in children:
             if child not in ranks:
-                ranks[child] = {}
-                ranks[child]['rank'] = ranks[node]['rank'] + 1
+                ranks[child] = { 'rank' : ranks[node]['rank'] + 1, 'back' : set() }
                 queue.append(child)
 
 
