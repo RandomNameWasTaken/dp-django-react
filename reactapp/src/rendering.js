@@ -86,7 +86,7 @@ export function init3Dgraphics(element, data) {
     return colString;
   }
 
-  function createLine(scene, data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max) {
+  function createLine(data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max, group) {
     const color = new THREE.Color( data[id]['color'] === undefined ? calcColor(rank_max, rank) : data[id]['color'] );
     //color.setHex(rank/10 * 0xffffff );
    // color.setHex(rank/10 * 0xffffff );
@@ -129,7 +129,7 @@ export function init3Dgraphics(element, data) {
     cylinder.name = id;
 
     //return _mergeMeshes([object, cylinder], false);
-    scene.add(cylinder);
+    group.add(cylinder);
   }
 
   // prevPoint, point - upper and downer middle points of cylinder
@@ -144,6 +144,7 @@ export function init3Dgraphics(element, data) {
     var tuple = Object.freeze({ id: id, prevPoint: prevPointFirst, point: pointFirst });
     var stack = [ tuple ];
 
+    const group = new THREE.Group();
 
     while (stack.length > 0) {
       const stackElement = stack.pop();
@@ -159,7 +160,7 @@ export function init3Dgraphics(element, data) {
         childsChildCount += data[cluster["Desc"][i]]["NodeCount"];
       }
 
-      createLine(scene, data, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank);
+      createLine(data, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank, group);
 
       const prevPointPointDist = Math.sqrt((point.x - prevPoint.x) * (point.x - prevPoint.x) + (point.y - prevPoint.y)
                               * (point.y - prevPoint.y) + (point.z - prevPoint.z) * (point.z - prevPoint.z));
@@ -206,6 +207,7 @@ export function init3Dgraphics(element, data) {
         stack.push(tuple);
       }
     }
+    scene.add(group);
   }
 
   function getIntersection(setA, setB) {
