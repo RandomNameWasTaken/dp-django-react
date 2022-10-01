@@ -55,14 +55,15 @@ class App extends React.Component {
 
         return (
         <div>
-          <h1>Vyber moznost</h1>
-          <div>
+          <div class="row back height-100"></div>
+          <div class="row height-200 ">
             <form onSubmit={this.handleSubmit}> 
-              <input type="submit" value={text1} onClick={this.handleButton1}/>
-              <input type="submit" value={text2} onClick={this.handleButton2}/>
-              <input type="submit" value={text3} onClick={this.handleButton3} />
+              <input class="col-sm-3 btn btn-outline-primary  wrapper" type="submit" value={text1} onClick={this.handleButton1}/>
+              <input class="col-sm-3 btn btn-outline-primary offset-1 wrapper" type="submit" value={text2} onClick={this.handleButton2}/>
+              <input class="col-sm-3 btn btn-outline-primary offset-1 wrapper" type="submit" value={text3} onClick={this.handleButton3} />
             </form>
           </div>
+        <div class="row back height-1000"></div>
         </div>
         );
     };

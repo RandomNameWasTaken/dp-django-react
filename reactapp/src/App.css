@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+
+.back {
+  background-color: #a9cce3 ;
+}
+
+.full-width-div {
+  position: absolute;
+  width: 100%;
+  left: 0;
+}
+
+.height-100 {
+  height: 100px;
+}
+
+.height-200 {
+  height: 200px;
+}
+
+.height-1000 {
+  height: 1000px;
+}
+
+.wrapper {
+  margin-top: 70px;
+}
