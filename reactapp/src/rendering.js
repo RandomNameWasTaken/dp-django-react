@@ -13,7 +13,8 @@ export function init3Dgraphics(element, data) {
   const CYLINDER_HEIGHT = 5;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color( 0xd3d3d3 );
+  //scene.background = new THREE.Color( 0xd3d3d3 );
+  scene.background = new THREE.Color( 0xffffff);
   const camera = new THREE.PerspectiveCamera(75, element.width / element.height, 0.1, 1000)
   const renderer = new THREE.WebGLRenderer({
     canvas: element,
@@ -64,7 +65,7 @@ export function init3Dgraphics(element, data) {
   function animate() {
     setTimeout( function() {
       requestAnimationFrame( animate );
-    }, 10 );
+    }, 1000 / 5 );
 
     controls.update();
     renderer.render(scene, camera);
@@ -117,7 +118,7 @@ export function init3Dgraphics(element, data) {
           height, radiusSegments, heightSegments */
       const edgeGeometry = new THREE.CylinderGeometry( nextRadius, currRadius, direction.length(), 8, 1);
       const cylinder = new THREE.Mesh( edgeGeometry, 
-              new THREE.MeshBasicMaterial( { color: color } ) );
+              new THREE.MeshPhongMaterial( { color: color, flatShading : true } ) );
 
       cylinder.applyMatrix4(orientation)
       cylinder.position.set(midPoint.x, midPoint.y, midPoint.z);
@@ -159,7 +160,6 @@ export function init3Dgraphics(element, data) {
       for (var i = 0; i < cluster["Desc"].length; ++i) {
         childsChildCount += data[cluster["Desc"][i]]["NodeCount"];
       }
-      console.log("childsChildCount ", childsChildCount);
 
       var cylinder = createCylinder(data, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank);
 
@@ -174,8 +174,7 @@ export function init3Dgraphics(element, data) {
 
             var offset = 0;
             if (childsChildCount === cluster["Desc"].length && childsChildCount !== 0 && data[cluster["Desc"][0]]["Desc"].length !== 0) {
-              console.log(current, " childs: ", childsChildCount, ";  ", cluster["Desc"][0], );
-              cylinder = undefined;
+              cylinder = undefined; // join same-like cluster to one - draw one cluster with bigger height
               newStartPoint = new Point(prevPoint.x, prevPoint.y, prevPoint.z); // to make copy
             }
 
@@ -340,7 +339,7 @@ export function init3Dgraphics(element, data) {
 
     //var cylinders = {};
 
-    const firstHeight = 10; //biggestRank * CYLINDER_HEIGHT / 2 + CYLINDER_HEIGHT;
+    const firstHeight = biggestRank * CYLINDER_HEIGHT / 2 + CYLINDER_HEIGHT;
     const firstStartPoint = new Point(0, firstHeight, 0);
     const firstEndPoint = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
 
