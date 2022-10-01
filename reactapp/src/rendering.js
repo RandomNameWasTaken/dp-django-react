@@ -59,11 +59,12 @@ export function init3Dgraphics(element, data) {
   //const randomNum = Math.floor(Math.random() * 8); 
 
   processClusters(scene, data);
+  data = null;
 
   function animate() {
     setTimeout( function() {
       requestAnimationFrame( animate );
-    }, 1000 / 3 );
+    }, 10 );
 
     controls.update();
     renderer.render(scene, camera);
@@ -86,7 +87,7 @@ export function init3Dgraphics(element, data) {
     return colString;
   }
 
-  function createLine(data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max, group) {
+  function createCylinder( data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max, offset) {
     const color = new THREE.Color( data[id]['color'] === undefined ? calcColor(rank_max, rank) : data[id]['color'] );
     //color.setHex(rank/10 * 0xffffff );
    // color.setHex(rank/10 * 0xffffff );
@@ -115,21 +116,17 @@ export function init3Dgraphics(element, data) {
       /* cylinder: radiusAtTop, radiusAtBottom, 
           height, radiusSegments, heightSegments */
       const edgeGeometry = new THREE.CylinderGeometry( nextRadius, currRadius, direction.length(), 8, 1);
-      const edge = new THREE.Mesh( edgeGeometry, 
+      const cylinder = new THREE.Mesh( edgeGeometry, 
               new THREE.MeshBasicMaterial( { color: color } ) );
 
-      edge.applyMatrix4(orientation)
-      edge.position.set(midPoint.x, midPoint.y, midPoint.z);
-      return edge;
+      cylinder.applyMatrix4(orientation)
+      cylinder.position.set(midPoint.x, midPoint.y, midPoint.z);
+      return cylinder;
     }
 
     const midPoint = new Point((startPoint.x + endPoint.x) / 2, (startPoint.y + endPoint.y) / 2, (startPoint.z + endPoint.z) / 2);
-    const cylinder = cylinderMesh(startPoint, endPoint, midPoint, currRadius, nextRadius, color); //new THREE.Mesh(geometryCyl, material);
+    return cylinderMesh(startPoint, endPoint, midPoint, currRadius, nextRadius, color); //new THREE.Mesh(geometryCyl, material);
 
-    cylinder.name = id;
-
-    //return _mergeMeshes([object, cylinder], false);
-    group.add(cylinder);
   }
 
   // prevPoint, point - upper and downer middle points of cylinder
@@ -143,14 +140,17 @@ export function init3Dgraphics(element, data) {
 
     var tuple = Object.freeze({ id: id, prevPoint: prevPointFirst, point: pointFirst });
     var stack = [ tuple ];
-
-    const group = new THREE.Group();
+ 
+    var count = 0
 
     while (stack.length > 0) {
+      ++count;
       const stackElement = stack.pop();
       const current = stackElement.id;
       const prevPoint = stackElement.prevPoint;
       const point = stackElement.point;
+
+      console.log(current);
 
       var cluster = data[current];
       const childCount = cluster["Desc"].length;
@@ -159,8 +159,9 @@ export function init3Dgraphics(element, data) {
       for (var i = 0; i < cluster["Desc"].length; ++i) {
         childsChildCount += data[cluster["Desc"][i]]["NodeCount"];
       }
+      console.log("childsChildCount ", childsChildCount);
 
-      createLine(data, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank, group);
+      var cylinder = createCylinder(data, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank);
 
       const prevPointPointDist = Math.sqrt((point.x - prevPoint.x) * (point.x - prevPoint.x) + (point.y - prevPoint.y)
                               * (point.y - prevPoint.y) + (point.z - prevPoint.z) * (point.z - prevPoint.z));
@@ -169,14 +170,21 @@ export function init3Dgraphics(element, data) {
 
         if (childCount === 1) {
 
+            var newStartPoint = new Point(point.x, point.y, point.z); // to make copy
+
+            var offset = 0;
+            if (childsChildCount === cluster["Desc"].length && childsChildCount !== 0 && data[cluster["Desc"][0]]["Desc"].length !== 0) {
+              console.log(current, " childs: ", childsChildCount, ";  ", cluster["Desc"][0], );
+              cylinder = undefined;
+              newStartPoint = new Point(prevPoint.x, prevPoint.y, prevPoint.z); // to make copy
+            }
+
             const dirVector = new THREE.Vector3(point.x - prevPoint.x, point.y - prevPoint.y, point.z - prevPoint.z);
             const newPoint = new Point(dirVector.x + point.x, dirVector.y + point.y, dirVector.z + point.z);
-            const newStartPoint = new Point(point.x, point.y, point.z);
 
             tuple = Object.freeze({ id: cluster["Desc"][0], prevPoint: newStartPoint, point: newPoint });
             stack.push(tuple);
           
-        //  dfsClustering(scene, data, cluster["Desc"][0], max_branching, branch_count, point, newPoint);
           continue;
         }
 
@@ -191,7 +199,7 @@ export function init3Dgraphics(element, data) {
 
         const vector = new THREE.Vector3(newStartPointHelper.x - prevPoint.x, newStartPointHelper.y - prevPoint.y, newStartPointHelper.z - prevPoint.z).normalize();
         const distance = Math.sqrt(cluster.NodeCount * cluster.NodeCount + prevPointPointDist * prevPointPointDist);
-        const newStartPoint = new Point(
+        newStartPoint = new Point(
           prevPoint.x + distance * vector.x,
           prevPoint.y + distance * vector.y,
           prevPoint.z + distance * vector.z,
@@ -202,12 +210,15 @@ export function init3Dgraphics(element, data) {
         zPos = Math.sin(theta) * childsChildCount * branch_factor; // TODO
         const newEndPoint = new Point(newStartPoint.x + xPos, newStartPoint.y - CYLINDER_HEIGHT, newStartPoint.z + zPos);
       
-          //dfsClustering(scene, data, cluster["Desc"][i], max_branching, branch_count + 1, newStartPoint, newEndPoint);
         tuple = Object.freeze({ id: cluster["Desc"][i], prevPoint: newStartPoint, point: newEndPoint });
         stack.push(tuple);
       }
+
+      if (cylinder !== undefined) {
+        scene.add(cylinder);
+      }
+
     }
-    scene.add(group);
   }
 
   function getIntersection(setA, setB) {
@@ -246,14 +257,12 @@ export function init3Dgraphics(element, data) {
     return true;
   }
 
-  function compSCC(node, data) {
+  function compSCCcolor(node, data) {
 
     const normal = _getSCCset(node, data, 'Desc');
     const reverted = _getSCCset(node, data, 'Backs');
 
     const scc = Array.from(getIntersection(normal, reverted));
-
-    console.log(scc);
 
     var color = "hsla(187, 90%, 50%, 0.53)";
     if (isOscillation(scc, data)) {
@@ -264,7 +273,6 @@ export function init3Dgraphics(element, data) {
     }
 
     scc.forEach((item) => {
-      console.log(item, " colored with ", color);
       data[item]['color'] = color;
     });
   }
@@ -308,7 +316,7 @@ export function init3Dgraphics(element, data) {
 
       // Predpocitat obratenu siet, pustit BFS na check SCC
       if (desc_count === 0) {
-        compSCC(current, data)
+        compSCCcolor(current, data)
       }
     }
 
@@ -332,7 +340,7 @@ export function init3Dgraphics(element, data) {
 
     //var cylinders = {};
 
-    const firstHeight = biggestRank * CYLINDER_HEIGHT / 2 + CYLINDER_HEIGHT;
+    const firstHeight = 10; //biggestRank * CYLINDER_HEIGHT / 2 + CYLINDER_HEIGHT;
     const firstStartPoint = new Point(0, firstHeight, 0);
     const firstEndPoint = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
 
