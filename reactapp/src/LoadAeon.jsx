@@ -40,7 +40,7 @@ export default class LoadAeon extends React.Component {
         value : this.props.value || StateApp.LoadAeon,
         selectedFile: null,
 
-        option: null,
+        option: 1,
 
         json_data:null,
         checked_nodes : [],
@@ -76,31 +76,38 @@ export default class LoadAeon extends React.Component {
 
     // On file upload (click the upload button)
     onFileUpload = () => {
-          const file = this.state.selectedFile;
-  
-          var reader = new FileReader();
-          reader.readAsText(file,'UTF-8');
-       
-          reader.addEventListener("load", () => {
-              var r = reader.result;
 
-              var r_lines = r.split("\n");
-              const regex_comment = /^\s*#/;
-              var result_data = [];
-              for (let i = 0; i < r_lines.length; i++) {
-                if (r_lines[i].match(regex_comment)) {
-                  continue;
-                }
-                result_data.push(r_lines[i]);
-              }
+      if (!this.state.sync && !this.state.async) {
+        // TODO chyba aspon jedno musi byt
+        return;
+      }
+      this.setState({ option : this.state.node ? 1 : 2 });
 
-              this.setState({ file_read : result_data });
-              const result_data_joined = result_data.join(" %% ");
-              document.cookie="resultData=" + result_data_joined + "; SameSite=None; Secure";
-          });
+      const file = this.state.selectedFile;
 
-        this.setState({ value : StateApp.Config });
-      };
+      var reader = new FileReader();
+      reader.readAsText(file,'UTF-8');
+    
+      reader.addEventListener("load", () => {
+          var r = reader.result;
+
+          var r_lines = r.split("\n");
+          const regex_comment = /^\s*#/;
+          var result_data = [];
+          for (let i = 0; i < r_lines.length; i++) {
+            if (r_lines[i].match(regex_comment)) {
+              continue;
+            }
+            result_data.push(r_lines[i]);
+          }
+
+          this.setState({ file_read : result_data });
+          const result_data_joined = result_data.join(" %% ");
+          document.cookie="resultData=" + result_data_joined + "; SameSite=None; Secure";
+      });
+
+      this.setState({ value : StateApp.Config });
+    };
   
 
     fileData = () => {    
@@ -218,6 +225,8 @@ export default class LoadAeon extends React.Component {
           return <App />;
         }
 
+        console.log(this.state.value);
+
         if (this.state.value === StateApp.Visualise) {
 
           // Ask to save data
@@ -240,24 +249,8 @@ export default class LoadAeon extends React.Component {
         
         if (this.state.value === StateApp.Config) {
 
-          if (this.state.option === null) {
-            return (
-            <form>
-              <input type="checkbox" id="async" name="semantics" value="1" onChange={event => this.setState({async : true})}/>
-              <label for="async">Async</label>
-              <input type="checkbox" id="sync" name="semantics" value="2" onChange={event => this.setState({sync : true})}/>
-              <label for="sync">Sync</label>
-              <br/>
-              <input type="radio" id="node" name="option" value="1" onChange={event => this.setState({node : true, whole: false})}/>
-              <label for="node">from one node</label>
-              <input type="radio" id="whole" name="option" value="2" onChange={event => this.setState({whole : true, node: false})}/>
-              <label for="whole">whole state space</label>
-              <input type="submit" value="Send" onClick={this.handleSemanticsButton} />
-            </form>);
-          }
-
-          if (this.state.option === 1 && !this.state.nodes) {
-              axios
+          if (!this.state.nodes) {
+            axios
               .get("http://127.0.0.1:8000/get_nodes")
               .then(response => {
                 const result = JSON.parse(response.data);
@@ -273,7 +266,8 @@ export default class LoadAeon extends React.Component {
             );
           }
 
-          if (this.state.option === 1 && this.state.nodes && this.state.compute === false) {
+          if (this.state.nodes && this.state.compute === false) {
+
             var parametrization_selection;
             const counts = Array.from(Array(this.state.param_count).keys());
 
@@ -303,9 +297,6 @@ export default class LoadAeon extends React.Component {
                 lis.push(<li key={name}> {name}: {expresion_arr[0]}&nbsp;{choose_param}&nbsp;{expr_snd}</li>);
               });
 
-
-
-  
               parametrization_selection = <div className="App">
                                             <h3>Select parametrizations</h3>
                                             <div class="row">
@@ -408,7 +399,9 @@ export default class LoadAeon extends React.Component {
         }
 
         return (
-            <div>
+          <div>
+            <div class="row">
+              <div class="col">
                 <h3>
                   File Upload
                 </h3>
@@ -419,9 +412,29 @@ export default class LoadAeon extends React.Component {
                     </button>
                 </div>
               {this.fileData()}
+              </div>
+              <div class="col">
+                <h3>
+                Semantics
+                </h3>
+                <form>
+                  <input type="checkbox" id="async" name="semantics" value="1" onChange={event => this.setState({async : true})}/>
+                  <label for="async">Async</label>
+                  <input type="checkbox" id="sync" name="semantics" value="2" onChange={event => this.setState({sync : true})}/>
+                  <label for="sync">Sync</label>
+                  <br/>
+                  <input type="radio" id="node" name="option" value="1"  checked onChange={event => this.setState({node : true, whole: false})}/>
+                  <label for="node">from one node</label>
+                  <input type="radio" id="whole" name="option" value="2" disabled onChange={event => this.setState({whole : true, node: false})}/>
+                  <label for="whole">whole state space</label>
+                </form>
 
-              <input type="submit" value="Back" onClick={this.handleBackButton} />
+              </div>
             </div>
+            <div class="row">
+             <input type="submit" value="Back" class="col-sm-2" onClick={this.handleBackButton} />
+            </div>
+          </div>
           );
     }
 }
