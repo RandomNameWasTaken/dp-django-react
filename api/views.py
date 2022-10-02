@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
 from .main import *
+from .generator import generate_aeon
 import json
 import pickle
 
@@ -48,3 +49,12 @@ def getNodes(request):
 
     json_result = json.dumps(result)
     return Response(json_result)
+
+
+@api_view(['GET'])
+def getGeneratedAONFile(request):
+    number_of_nodes = int(request.query_params.get('n'))
+    print(number_of_nodes)
+    aeon_text = generate_aeon(number_of_nodes)
+    print(aeon_text)
+    return Response(aeon_text)

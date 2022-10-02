@@ -59,8 +59,8 @@ export default class LoadAeon extends React.Component {
   //  const [param_arguments, set_param_arguments] = useState();
 
     onFileChange = event => {
-        // Update the state
-        this.setState({ selectedFile: event.target.files[0] });
+      // Update the state
+      this.setState({ selectedFile: event.target.files[0] });
     };
 
     handleParams = (event) => {
