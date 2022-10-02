@@ -70,8 +70,9 @@ export default class LoadAeon extends React.Component {
 
       const element = event.target;
       const parent_id = element.closest("ul").getAttribute("id").split('_');
+      console.log(event.target.value);
 
-      param_arguments[parent_id[1]][name][index - 1] = "|"; // TODO spravny operator
+      param_arguments[parent_id[1]][name][index - 1] = event.target.value; // TODO spravny operator
     };
 
     // On file upload (click the upload button)

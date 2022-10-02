@@ -25,25 +25,29 @@ def get_simp_expr(c, vals, nodes, node_count):
 
 def get_comp_expr(op, vals, nodes, node_count):
 
-    #fun = (lambda x, y: x and y) if op == '&' else (lambda x, y: x or y)
-    fun = ''
+    fun = None
     if op == '&':
         fun = (lambda x, y: x and y)
 
     if op == '|':
         fun = (lambda x, y: x or y)
 
-    c1 = vals.pop()
+    if op == '->':
+        fun = (lambda x, y: not x or y)
 
+    if op == '<=>':
+        fun = (lambda x, y: x == y)
+
+    c1 = vals.pop()
     expr1, expr2 = None, None
-    if c1 == '&' or c1 == '|':
+    if is_operator(c1):
         (expr1, node_count) = get_comp_expr(c1, vals, nodes, node_count)
     else:
         (expr1, node_count) = get_simp_expr(c1, vals, nodes, node_count)
 
     c2 = vals.pop()
 
-    if c2 == '&' or c2 == '|':
+    if is_operator(c2):
         (expr2, node_count) = get_comp_expr(c2, vals, nodes, node_count)
     else:
         (expr2, node_count) = get_simp_expr(c2, vals, nodes, node_count)
@@ -61,7 +65,7 @@ def parse_rules(rules, nodes, node, node_count):
     while len(vals) > 0:
         c = vals.pop()
 
-        if c == '&' or c == '|':
+        if is_operator(c):
             (expr, node_count) = get_comp_expr(c, vals, nodes, node_count)
         else:
             (expr, node_count) = get_simp_expr(c, vals, nodes, node_count)
@@ -71,9 +75,9 @@ def parse_rules(rules, nodes, node, node_count):
 
 def parse(Lines):
     # PARSE
-    r_skip = re.compile('^\s*#');
-    r_update_catch = re.compile('^\s*\$(?P<node>\w+)\s*:\s*(?P<rules>.+)\s*$');
-    r_regul = re.compile('^\s*(?P<regulator>\w+)\s*-(?P<kind>>|\|)\s*(?P<node>\w+)');
+    r_skip = re.compile('^\s*#')
+    r_update_catch = re.compile('^\s*\$(?P<node>\w+)\s*:\s*(?P<rules>.+)\s*$')
+    r_regul = re.compile('^\s*(?P<regulator>\w+)\s*-(?P<kind>>|\|)\s*(?P<node>\w+)')
     r_param = re.compile('.*( |:)(?P<parametrization>(\w|_)+\(.+\))')
     r_begin_of_param = re.compile('(\w|_)+\(')
     r_param_inside = re.compile('.*\((.*)\)')
@@ -85,9 +89,9 @@ def parse(Lines):
     node_count = 0 # index of array in permutations
     for line in Lines:
         if re.match(r_skip, line):
-            continue;
+            continue
 
-        match = re.match(r_update_catch, line);
+        match = re.match(r_update_catch, line)
         if match:
             node = match.group('node')
             rules = match.group('rules')
@@ -110,9 +114,9 @@ def parse(Lines):
             node_count = add_key(nodes, node, node_count)
             updates[nodes[node]] = expr
 
-            continue;
+            continue
 
-        match = re.match(r_regul, line);
+        match = re.match(r_regul, line)
         if match:
             regulator = match.group('regulator')
             kind = match.group('kind')

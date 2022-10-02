@@ -1,4 +1,3 @@
-
 def get_name(number, nodes):
     res = bin(number)
     res = res[2:]
@@ -36,7 +35,7 @@ def shunting_yard_algo(rules, nodes, node_count):
                 output.append(last_c)
                 last_c = stack_op.pop()
 
-        elif c == "&" or c == "|":
+        elif is_operator(c):
             stack_op.append(c)
 
         else:
@@ -46,3 +45,6 @@ def shunting_yard_algo(rules, nodes, node_count):
         output.append(stack_op.pop())
 
     return output
+
+def is_operator(c):
+    return c in ['&', '->', '|', '<=>']
