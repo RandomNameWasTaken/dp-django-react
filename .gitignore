@@ -1,0 +1,3 @@
+reactapp/node_modules/*
+reactapp/build/*
+api/__pycache__/*
