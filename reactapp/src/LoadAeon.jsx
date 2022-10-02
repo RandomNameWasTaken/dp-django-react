@@ -5,6 +5,7 @@ import Visualise from './Visualise';
 import axios from "axios";
 
 let param_arguments = {};
+let param_lines = {};
 
 function get_select_fun(fun, name) {
   return (
@@ -52,6 +53,8 @@ export default class LoadAeon extends React.Component {
         asked : false,
 
         param_arguments: {},
+
+        param_count : 1,
     };
   //  const [param_arguments, set_param_arguments] = useState();
 
@@ -65,7 +68,10 @@ export default class LoadAeon extends React.Component {
       const name = id_arr[0];
       const index = id_arr[1];
 
-      param_arguments[name][index - 1] = "|";
+      const element = event.target;
+      const parent_id = element.closest("ul").getAttribute("id").split('_');
+
+      param_arguments[parent_id[1]][name][index - 1] = "|"; // TODO spravny operator
     };
 
     // On file upload (click the upload button)
@@ -139,26 +145,32 @@ export default class LoadAeon extends React.Component {
       this.setState({ compute : true });
 
       if (this.state.params !== undefined) {
-        this.state.params.forEach((value, key) => {
-           
-          var args_concat = '';
-          var args = value["args"].split(',');
-          for (var i = 0; i < args.length; ++i) {
-            if (args_concat.length > 0) {
-              args_concat += " " + param_arguments[key][ i - 1 ] + " ";
+        for (var c = 0; c < this.state.param_count; ++c) {
+          this.state.params.forEach((value, key) => {
+            
+            var args_concat = '';
+            var args = value["args"].split(',');
+            for (var i = 0; i < args.length; ++i) {
+              if (args_concat.length > 0) {
+                args_concat += " " + param_arguments[c][key][ i - 1 ] + " ";
+              }
+              args_concat += args[i];
             }
-            args_concat += args[i];
-          }
 
-          const expresion_arr = value["expr"].split("___parametrization___");
-          var expr_snd = '';
-          if (expresion_arr.length > 1) {
-            expr_snd = expresion_arr[1];
-          }
+            const expresion_arr = value["expr"].split("___parametrization___");
+            var expr_snd = '';
+            if (expresion_arr.length > 1) {
+              expr_snd = expresion_arr[1];
+            }
 
-          const line = "$" + key + " : " + expresion_arr[0] + " " + args_concat + " " + expr_snd;
-          this.state.file_read.push(line);
-        });
+            if (param_lines[c] === undefined) {
+              param_lines[c] = []
+            }
+
+            param_lines[c].push( "$" + key + " : " + expresion_arr[0] + " " + args_concat + " " + expr_snd);
+          });
+
+        }
       }
     };
 
@@ -195,6 +207,11 @@ export default class LoadAeon extends React.Component {
       this.setState({ asked : true });
     }
 
+    addParam = (event) => {
+      event.preventDefault();
+      this.setState({ param_count : this.state.param_count + 1 });
+    }
+
 
     render() {
         if (this.state.value === StateApp.MainApp) {
@@ -207,6 +224,7 @@ export default class LoadAeon extends React.Component {
           const clusters_parsed = JSON.parse(this.state.clusters);
 
           if (this.state.asked === true) {
+            console.log("to visualise ", clusters_parsed);
             return <Visualise fileData={clusters_parsed} />;
           }
           return (
@@ -257,6 +275,8 @@ export default class LoadAeon extends React.Component {
 
           if (this.state.option === 1 && this.state.nodes && this.state.compute === false) {
             var parametrization_selection;
+            const counts = Array.from(Array(this.state.param_count).keys());
+
             if (this.state.params !== undefined) {
   
               var lis = [];
@@ -264,29 +284,48 @@ export default class LoadAeon extends React.Component {
                 const args = value["args"].split(',');
                 const choose_param = choose_parametrization(this.handleParams, args, this.state.reguls, this.state.nodes, name);
   
-                if (param_arguments[name] === undefined) {
-                  param_arguments[name] = args.map( arg => "&" );
-                  param_arguments[name].pop();
-                }
-  
                 const expresion_arr = value["expr"].split("___parametrization___");
                 var expr_snd = '';
                 if (expresion_arr.length > 1) {
                   expr_snd = expresion_arr[1];
                 }
+
+                for (var c = 0; c < this.state.param_count; ++c) {
+                  if (param_arguments[c] === undefined) {
+                    param_arguments[c] = {}
+                  }
+                  if (param_arguments[c][name] === undefined) {
+                    param_arguments[c][name] = args.map( arg => "&" );
+                    param_arguments[c][name].pop();
+                  }
+                }
   
                 lis.push(<li key={name}> {name}: {expresion_arr[0]}&nbsp;{choose_param}&nbsp;{expr_snd}</li>);
               });
+
+
+
   
               parametrization_selection = <div className="App">
                                             <h3>Select parametrizations</h3>
-                                              <ul>
-                                              {
-                                                lis.map(li => {
-                                                  return li;
-                                                })
-                                              }
-                                              </ul>
+                                            <div class="row">
+                                            {
+                                              counts.map(c => {
+                                                return (
+                                                <div class="col">
+                                                  <ul id={'param_' + c}>
+                                                    {
+                                                      lis.map(li => {
+                                                        return li;
+                                                      }, this)
+                                                    }
+                                                  </ul>
+                                                </div>);
+                                              }, this)
+                                            }
+                                            
+                                            <button class="col" onClick={this.addParam}> + </button>
+                                            </div>
                                           </div>
             }
 
@@ -326,15 +365,28 @@ export default class LoadAeon extends React.Component {
 
           if (this.state.compute) {
             const result_data_joined = this.state.file_read.join(" %% ");
+
             document.cookie = "resultData=" + result_data_joined + "; SameSite=None; Secure";
 
+
             const nodes = this.state.checked_nodes.join(',');
-            const params = "semantics=" + (this.state.async ? (this.state.sync ? "async,sync" : "async") : "sync")
+            const params = "semantics=" 
                           + "&option=" + this.state.option
-                          + (nodes !== "" ? "&nodes=" + nodes : "");
+                          + (nodes !== "" ? "&nodes=" + nodes : "")
+
+            var data_params = {
+              semantics: (this.state.async ? (this.state.sync ? "async,sync" : "async") : "sync"),
+              options: this.state.option,
+              nodes: nodes
+            }
+            
+            if (param_lines !== {}) {
+              const param_lines_json = JSON.stringify(param_lines);
+              data_params['params'] = param_lines_json;              
+            }
 
             axios
-              .get("http://127.0.0.1:8000/get_data?" + params)
+              .get("http://127.0.0.1:8000/get_data/", { params: data_params })
               .then(response => {
                 this.setState({ clusters : response.data });
                 this.setState({ value : StateApp.Visualise });

@@ -11,29 +11,23 @@ def getData(request):
     aeon_text = request.COOKIES.get('resultData')
     aeon_text = aeon_text.split(" %%")
 
-    result = get_nodes(aeon_text)
-
-    nodes_text = request.query_params.get('nodes')
-    nodes = nodes_text.split(',')
-
-    state = []
-    for i in result["nodes"]:
-        state.append(0)
-    
-    for input_key in nodes:
-        index = result["nodes"][input_key]
-        state[index] = 1
-
-    state = [str(i) for i in state]
-    state = ''.join(state)
-    state = int(state, 2)
-
     option = request.query_params.get('option')
+    semantics = request.query_params.get('semantics').split(',')
+    nodes_text = request.query_params.get('nodes')
+    nodes = nodes_text.split(',') if nodes_text != None else []
 
-    semantics = request.query_params.get('semantics').split(',');
-    
+    clusters_json = None
+    params = request.query_params.get('params')
 
-    clusters_json = compute_clusters(result["nodes"], result["regulations"], result["updates"], semantics, option, state)
+    b = params == "{}" or params == {} or params is None or len(params) == 0 or not(request.query_params.get('params'))
+
+    if b :
+        result = get_nodes(aeon_text)
+        clusters_json = compute_clusters(None, nodes, semantics, option, None, result)
+    else:
+        params = json.loads(params)
+        clusters_json = compute_clusters(aeon_text, nodes, semantics, option, params, None)
+
     return Response(clusters_json)
 
 

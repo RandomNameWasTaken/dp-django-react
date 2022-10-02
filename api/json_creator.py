@@ -1,4 +1,31 @@
-def create_json(result):
+def create_json(result, params):
+    json = ''
+    for param in result:
+        if json != '':
+           json += ",\n"
+
+        lines = ''
+        for line in params[param]:
+            if lines != '':
+                lines += ",\n"
+
+            lines += '"' + line + '"'
+
+        json_cl = create_json_to_sematic(result[param])
+
+        json += """
+        """ + '"' + str(param) + '"' + """: {
+        "Lines": [ """ + lines + """],
+        """ + json_cl + """
+        }
+        """
+    json = "{\n" + json + "\n}"
+
+    return json
+
+
+
+def create_json_to_sematic(result):
     json = ''
     for sem in result:
         if json != '':
@@ -9,9 +36,7 @@ def create_json(result):
         json += """
         """ + '"' + sem + '"' + """: 
             """ + json_cl + """
-        """;
-    
-    json = "{\n" + json + "\n}"
+        """
 
     return json
         

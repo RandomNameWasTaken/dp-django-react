@@ -21,12 +21,31 @@ def get_nodes(file_data):
 
     return result
 
-def compute_clusters(nodes, regulations, updates, semantics_arr, option, state):
+def compute_clusters(file_data, nodes_chosen, semantics_arr, option, params, result):
 
-    result = {}
-    if option == '1':
+    result_clusters = {}
+
+    if params is None:
+        nodes = result["nodes"]
+        regulations = result["regulations"]
+        updates = result["updates"]
+
+        state = []
+        for i in result["nodes"]:
+            state.append(0)
+        
+        for input_key in nodes_chosen:
+            index = result["nodes"][input_key]
+            state[index] = 1
+
+        state = [str(i) for i in state]
+        state = ''.join(state)
+        state = int(state, 2)
+
+        result_clusters[0] = {}
+        number_of_nodes = len(nodes)
+
         for semantic in semantics_arr:
-
             semantics = None
             if semantic == 'async':
                 semantics = Semantics.ASYNC
@@ -34,24 +53,46 @@ def compute_clusters(nodes, regulations, updates, semantics_arr, option, state):
             if semantic == 'sync':
                 semantics = Semantics.SYNC
 
-            number_of_nodes = len(nodes)
             clusters = cluster(state, number_of_nodes, nodes, regulations, updates, semantics)
 
-            result[semantic] = clusters
+            result_clusters[0][semantic] = clusters
+        
+        params = { 0 : []}
     else:
-        for semantic in semantics_arr:
-    
-            if semantic == 'async':
-                semantics = Semantics.ASYNC
+        for param in params:
 
-            if semantic == 'sync':
-                semantics = Semantics.SYNC
+            for line in params[param]:
+                file_data.append(line)
+                (nodes, regulations, updates, _) = read(file_data)
 
-            counting = state_space_proc(state_space)
-            clusters = cluster_whole_space(state_space, counting)
-            result[semantic] = clusters
+            state = []
+            for i in nodes:
+                state.append(0)
+            
+            for input_key in nodes_chosen:
+                index = nodes[input_key]
+                state[index] = 1
 
+            state = [str(i) for i in state]
+            state = ''.join(state)
+            state = int(state, 2)
 
-    result_json = create_json(result)
+            result_clusters[param] = {}
+            number_of_nodes = len(nodes)
+
+            for semantic in semantics_arr:
+
+                semantics = None
+                if semantic == 'async':
+                    semantics = Semantics.ASYNC
+
+                if semantic == 'sync':
+                    semantics = Semantics.SYNC
+
+                clusters = cluster(state, number_of_nodes, nodes, regulations, updates, semantics)
+
+                result_clusters[param][semantic] = clusters
+
+    result_json = create_json(result_clusters, params)
     return result_json
 
