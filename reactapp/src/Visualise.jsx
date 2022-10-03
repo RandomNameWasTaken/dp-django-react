@@ -4,8 +4,11 @@ import { init3Dgraphics } from './rendering.js';
 import { StateApp } from './StateApp.ts'
 
 function getWindowSize() {
-    const {innerWidth, innerHeight} = window;
-    
+    const main_div = document.getElementById('root');
+    const innerWidth = main_div.clientWidth;
+    const innerHeight = Math.max(main_div.clientHeight, 900);
+
+    console.log(innerWidth, " ", innerHeight);    
     return {innerWidth, innerHeight};
 }
 
@@ -38,7 +41,7 @@ export default class Visualise extends React.Component {
 
             const window_sizes = getWindowSize();
 
-            const canvas_number = Object.keys(fileData).length;
+            var canvas_number = Object.keys(fileData).length;
 
             var canvases = [];
 
@@ -48,6 +51,7 @@ export default class Visualise extends React.Component {
             var both_semantics = false;
             if (fileData[0]['sync'] !== undefined && fileData[0]['async'] !== undefined) {
                 both_semantics = true;
+                canvas_number = canvas_number * 2;
             }
 
             console.log("both ", both_semantics);
@@ -62,16 +66,15 @@ export default class Visualise extends React.Component {
 
                         var width = window_sizes.innerWidth;
                         var height =  window_sizes.innerHeight;
-                        if (canvas_number > 1) {
 
-                            const division = Math.floor(canvas_number/2);
-                            if (division <= 1) {
-                                height = window_sizes.innerHeight;
-                            } else {
-                                height =  Math.floor(window_sizes.innerHeight/2);
-                            }
-                            width = Math.floor(window_sizes.innerWidth / (division + 1));
+                        const division = Math.floor(canvas_number/2);
+                        if (division <= 1) {
+                            height = window_sizes.innerHeight;
+                        } else {
+                            height = Math.floor(window_sizes.innerHeight/2);
                         }
+                        width = Math.floor(window_sizes.innerWidth / (division + 1));
+                        
 
                         canvases.push(React.createElement('canvas', { id : "canvas" + index, width: width, height: height, class: "col" }));
 
