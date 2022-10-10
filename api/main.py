@@ -3,6 +3,7 @@ from .cluster_by_more_rounds import *
 from .parse import *
 from .json_creator import *
 from .semantic import *
+from .coloring import cluster_coloring
 
 from datetime import datetime
 
@@ -52,6 +53,8 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, option, params, res
 
             clusters = cluster(state, number_of_nodes, nodes, regulations, updates, semantics)
 
+            cluster_coloring(clusters)
+
             result_clusters[0][semantic] = clusters
         
         params = { 0 : []}
@@ -91,5 +94,6 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, option, params, res
                 result_clusters[param][semantic] = clusters
 
     result_json = create_json(result_clusters, params, nodes)
+    print(result_json)
     return result_json
 

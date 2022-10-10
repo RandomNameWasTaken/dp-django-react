@@ -64,6 +64,7 @@ def create_json_to_cluster(clusters):
             {
                 "Rank": """ + str(cl.rank) + """,
                 "NodeCount": """ + str(len(cl.nodes)) + """,
+                "Color": """ + cl.color + """,
                 "Nodes": [ """ + ', '.join([ str(node) for node in cl.nodes ]) + """ ],
                 "Desc": [ """ + ', '.join([ '"' + desc.get_name() + '"' for desc in cl.desc ])  + """ ],
                 "Backs": [ """ + ', '.join([ '"' + back.get_name() + '"' for back in cl.backs ]) + """ ]

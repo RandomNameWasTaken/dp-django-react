@@ -206,7 +206,7 @@ export function init3Dgraphics(element, data, nodes_ids) {
   }
 
   function createCylinder( data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max) {
-    const color = new THREE.Color( data[id]['color'] === undefined ? calcColor(rank_max, rank) : data[id]['color'] );
+    const color = new THREE.Color( data[id]['Color'] === '' ? calcColor(rank_max, rank) : data[id]['Color'] );
     //color.setHex(rank/10 * 0xffffff );
    // color.setHex(rank/10 * 0xffffff );
 
@@ -336,62 +336,6 @@ export function init3Dgraphics(element, data, nodes_ids) {
     }
   }
 
-  function getIntersection(setA, setB) {
-    const intersection = new Set(
-      [...setA].filter(element => setB.has(element))
-    );
-  
-    return intersection;
-  }
-
-  function _getSCCset(node, data, childs) {
-    var result = new Set();
-
-    var queue = [node]
-    while (queue.length > 0) {
-      var curr_node = queue.shift();
-      result.add(curr_node);
-
-      for (var i = 0; i < data[curr_node][childs].length; ++i) {
-        queue.push(data[curr_node][childs][i]);
-      }
-    }
-    return result;
-  }
-
-  function isStability(scc) {
-    return scc.length === 1;
-  }
-
-  function isOscillation(scc, data) {
-    scc.forEach((item) => {
-      if (data[item]["NodeCount"] !== 1 || data[item]["Desc"].length !== 1) {  // TODO overit
-        return false;
-      }
-    });
-    return true;
-  }
-
-  function compSCCcolor(node, data) {
-
-    const normal = _getSCCset(node, data, 'Desc');
-    const reverted = _getSCCset(node, data, 'Backs');
-
-    const scc = Array.from(getIntersection(normal, reverted));
-
-    var color = "hsla(187, 90%, 50%, 0.53)";
-    if (isOscillation(scc, data)) {
-      color = "hsla(100, 90%, 50%, 0.53)";
-    }
-    if (isStability(scc)) {
-      color = "hsla(295, 90%, 50%, 0.37)";
-    }
-
-    scc.forEach((item) => {
-      data[item]['color'] = color;
-    });
-  }
-
   function compMaxBranching(data, key) {
 
     let stack = [ key ];
@@ -427,11 +371,6 @@ export function init3Dgraphics(element, data, nodes_ids) {
         if (desc_count > 1) {
           maximums[current] += 1;
         }
-      }
-
-      // Predpocitat obratenu siet, pustit BFS na check SCC
-      if (desc_count === 0) {
-        compSCCcolor(current, data)
       }
     }
 

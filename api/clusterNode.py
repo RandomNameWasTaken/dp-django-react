@@ -7,6 +7,7 @@ class ClusterNode:
         self.rank = rank
         self.anc = None
         self.backs = set()
+        self.color = '""'
 
     def get_name(self):
       #  return ",".join([ str(i) for i in self.nodes ])
