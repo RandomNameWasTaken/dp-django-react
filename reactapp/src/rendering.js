@@ -2,9 +2,22 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { Point } from './Point';
+import { Font } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
+function dec2bin(dec, n) {
+  var res = (dec >>> 0).toString(2);
 
-export function init3Dgraphics(element, data) {
+  if (res.length < n) {
+    for (let i = 0; i < (n - res.length); ++i) {
+      res = '0' + res;
+    }
+  }
+
+  return res;
+}
+
+export function init3Dgraphics(element, data, nodes_ids) {
 
   if (data === undefined) {
     return false;
@@ -26,8 +39,24 @@ export function init3Dgraphics(element, data) {
   renderer.sortObjects = false;
   renderer.render(scene, camera);
 
+  const fontJson = require( "./fonts/Caviar_Dreams_Bold.json" );
+  const font = new Font( fontJson );
+  var texts = [];
+
+  var mouse = new THREE.Vector2();
+  var raycaster = new THREE.Raycaster();
+
+  function onMouseMove( event ) {
+
+    // calculate pointer position in normalized device coordinates
+    // (-1 to +1) for both components
+
+    mouse.x = ( event.clientX / element.width ) * 2 - 1;
+    mouse.y = - ( event.clientY / element.height ) * 2 + 1;
+  }
+
   const axesHelper = new THREE.AxesHelper(100);
-  scene.add(axesHelper);
+  //scene.add(axesHelper);
 
   const gui = new dat.GUI();
   const options = {
@@ -46,7 +75,7 @@ export function init3Dgraphics(element, data) {
   const lightHelper = new THREE.PointLightHelper(pointLight);  // shows position of lighsource
   const gridHelper = new THREE.GridHelper(30, 20);
 
-  scene.add(lightHelper, gridHelper);
+  //scene.add(lightHelper, gridHelper);
 
   window.addEventListener('resize', function() {
     camera.aspect = element.width / element.height;
@@ -56,8 +85,91 @@ export function init3Dgraphics(element, data) {
 
   const controls = new OrbitControls(camera, renderer.domElement);
 
-  // Returns a random integer from 0 to 9:
-  //const randomNum = Math.floor(Math.random() * 8); 
+  var nodes_to_id = {};
+
+
+  function resetMaterials() {
+    for (let i = 0; i < scene.children.length; i++) {
+      if (scene.children[i].material) {
+        scene.children[i].material.opacity = 1.0;
+      }
+    }
+  }
+
+
+  function hoverPieces() {
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+
+    for (let i = 0; i < intersects.length; i++) {
+      const newMaterial = intersects[i].object.material.clone();
+      newMaterial.transparent = true;
+      newMaterial.opacity = 0.5;
+      intersects[i].object.material = newMaterial;
+    }
+  }
+
+  function onClick() {
+    texts.forEach((text) => { removeObject3D(text) });
+
+    raycaster.setFromCamera(mouse, camera);
+    let intersects = raycaster.intersectObjects(scene.children);
+
+    if (intersects.length === 1) {
+      const obj = intersects[0].object;
+      var text = '';
+      nodes_to_id[obj.id].forEach(function (elem) {
+        if (text !== '') {
+          text += ',';
+        }
+        text += ' (';
+        const bin = dec2bin(elem, nodes_ids.length);
+
+        for (let i = 0; i < bin.length; i++) {
+          if (bin[i] === '1') {
+            text += ' ' + nodes_ids[i];
+          }
+        }
+        text += ')';
+      });
+
+      const geometry = new TextGeometry(text, {
+        font : font,
+        size : 1,
+        height : 1,
+      });
+
+      const textMesh = new THREE.Mesh(geometry, [
+        new THREE.MeshPhongMaterial( { color : 0x000000 } )
+      ]);
+
+      textMesh.position.x = obj.position.x;
+      textMesh.position.y = obj.position.y;
+      textMesh.position.z = obj.position.z + 10;
+
+      texts.push(textMesh);
+      scene.add(textMesh);      
+    }
+  }
+
+  function removeObject3D(object3D) {
+    if (!(object3D instanceof THREE.Object3D)) return false;
+
+    // for better memory management and performance
+    if (object3D.geometry) object3D.geometry.dispose();
+
+    if (object3D.material) {
+        if (object3D.material instanceof Array) {
+            // for better memory management and performance
+            object3D.material.forEach(material => material.dispose());
+        } else {
+            // for better memory management and performance
+            object3D.material.dispose();
+        }
+    }
+    object3D.removeFromParent(); // the parent might be the scene or another Object3D, but it is sure to be removed this way
+    return true;
+}
 
   processClusters(scene, data);
   data = null;
@@ -68,10 +180,15 @@ export function init3Dgraphics(element, data) {
     }, 1000 / 5 );
 
     controls.update();
+    resetMaterials();
+    hoverPieces();
     renderer.render(scene, camera);
   }
 
   renderer.setAnimationLoop(animate);
+
+  window.addEventListener( 'click', onClick );
+  window.addEventListener( 'mousemove', onMouseMove );
 
   window.addEventListener('resize', function() {
     camera.aspect = element.width / element.width
@@ -88,7 +205,7 @@ export function init3Dgraphics(element, data) {
     return colString;
   }
 
-  function createCylinder( data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max, offset) {
+  function createCylinder( data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max) {
     const color = new THREE.Color( data[id]['color'] === undefined ? calcColor(rank_max, rank) : data[id]['color'] );
     //color.setHex(rank/10 * 0xffffff );
    // color.setHex(rank/10 * 0xffffff );
@@ -122,6 +239,7 @@ export function init3Dgraphics(element, data) {
 
       cylinder.applyMatrix4(orientation)
       cylinder.position.set(midPoint.x, midPoint.y, midPoint.z);
+      nodes_to_id[cylinder.id] = data[id]["Nodes"];
       return cylinder;
     }
 
@@ -150,8 +268,6 @@ export function init3Dgraphics(element, data) {
       const current = stackElement.id;
       const prevPoint = stackElement.prevPoint;
       const point = stackElement.point;
-
-      console.log(current);
 
       var cluster = data[current];
       const childCount = cluster["Desc"].length;
@@ -337,28 +453,11 @@ export function init3Dgraphics(element, data) {
 
     const max_branching = compMaxBranching(data, root_cluster_key);
 
-    //var cylinders = {};
-
     const firstHeight = biggestRank * CYLINDER_HEIGHT / 2 + CYLINDER_HEIGHT;
     const firstStartPoint = new Point(0, firstHeight, 0);
     const firstEndPoint = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
 
     clustering(scene, data, root_cluster_key, max_branching, 1, firstStartPoint, firstEndPoint, biggestRank);
-
-    /*
-    gui.addColor(options, 'sphereColor').onChange(function(e) {
-
-      for (const [key, cylinder] of Object.entries(cylinders)) {
-        cylinder.material.color.set(e);
-      }
-    });
-    
-      gui.add(options, 'wireframe').onChange(function(e) {
-        cylinders.forEach(function(cylinder) {
-          cylinder.material.wireframe = e;
-        });
-      });
-    */
   }
 }
 

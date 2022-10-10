@@ -8,7 +8,6 @@ function getWindowSize() {
     const innerWidth = main_div.clientWidth;
     const innerHeight = Math.max(main_div.clientHeight, 900);
 
-    console.log(innerWidth, " ", innerHeight);    
     return {innerWidth, innerHeight};
 }
 
@@ -16,7 +15,7 @@ function getWindowSize() {
 export default class Visualise extends React.Component {
     state = {
         value : this.props.value || StateApp.Visualise,
-
+        number_of_nodes : 10,
     };
 
     handleBackButton = event => {
@@ -46,7 +45,6 @@ export default class Visualise extends React.Component {
             var canvases = [];
 
             var index = 0;
-            console.log("filedata ", fileData);
 
             var both_semantics = false;
             if (fileData[0]['sync'] !== undefined && fileData[0]['async'] !== undefined) {
@@ -54,13 +52,14 @@ export default class Visualise extends React.Component {
                 canvas_number = canvas_number * 2;
             }
 
-            console.log("both ", both_semantics);
-
             if (both_semantics) {
                 for (var key in fileData) {
 
                     for (var sem in fileData[key]) {
-                        if (sem === 'Lines') {
+                        if (sem === 'Lines' || sem === 'Nodes') {
+                            if (sem === 'NumberOfNodes') {
+                                this.setState({ number_of_nodes : fileData[key][sem] });
+                            }
                             continue
                         }
 
@@ -86,10 +85,12 @@ export default class Visualise extends React.Component {
                 for (var key in fileData) {
 
                     for (var sem in fileData[key]) {
-                        if (sem === 'Lines') {
+                        if (sem === 'Lines' || sem === 'Nodes') {
+                            if (sem === 'NumberOfNodes') {
+                                this.setState({ number_of_nodes : fileData[key][sem] });
+                            }
                             continue
                         }
-
 
                         var width = window_sizes.innerWidth;
                         var height =  window_sizes.innerHeight;
@@ -125,14 +126,13 @@ export default class Visualise extends React.Component {
             var index = 0;
             for (var key in fileData) {
                 for (var sem in fileData[key]) {
-                    if (sem === 'Lines') {
+                    if (sem === 'Lines' || sem === 'Nodes') {
                         continue
                     }
                     const data = fileData[key][sem];
-                    console.log(data);
-
                     const canvas = document.getElementById("canvas" + index);
-                    init3Dgraphics(canvas, data);
+
+                    init3Dgraphics(canvas, data, fileData[key]['Nodes']);
 
                     index += 1;
                 }

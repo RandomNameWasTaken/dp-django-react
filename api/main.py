@@ -4,9 +4,6 @@ from .parse import *
 from .json_creator import *
 from .semantic import *
 
-import pickle
-import sys
-import threading
 from datetime import datetime
 
 def get_nodes(file_data):
@@ -93,6 +90,6 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, option, params, res
 
                 result_clusters[param][semantic] = clusters
 
-    result_json = create_json(result_clusters, params)
+    result_json = create_json(result_clusters, params, nodes)
     return result_json
 

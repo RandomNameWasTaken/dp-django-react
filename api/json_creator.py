@@ -1,4 +1,6 @@
-def create_json(result, params):
+import json as json_dumper
+
+def create_json(result, params, nodes):
     json = ''
     for param in result:
         if json != '':
@@ -13,9 +15,12 @@ def create_json(result, params):
 
         json_cl = create_json_to_sematic(result[param])
 
+        nodes_json = json_dumper.dumps({v: k for k, v in nodes.items()}, indent = 4) 
+
         json += """
         """ + '"' + str(param) + '"' + """: {
         "Lines": [ """ + lines + """],
+        "Nodes": """ + nodes_json + """,
         """ + json_cl + """
         }
         """
@@ -54,27 +59,14 @@ def create_json_to_cluster(clusters):
         if json != '':
             json += ",\n"
 
-        name = '"' + cl.get_name() + '"'
-
-        descs = ''
-        for d in cl.desc:
-            if descs != '':
-                descs += ', '
-            descs += '"' + d.get_name() + '"'
-
-        backs = ''
-        for b in cl.backs:
-            if backs != '':
-                backs += ', '
-            backs += '"' + b.get_name() + '"'
-
         json += """
-    """ + name + """:
+    """ + '"' + cl.get_name() + '"' + """:
             {
                 "Rank": """ + str(cl.rank) + """,
                 "NodeCount": """ + str(len(cl.nodes)) + """,
-                "Desc": [ """ + descs + """ ],
-                "Backs": [ """ + backs + """ ]
+                "Nodes": [ """ + ', '.join([ str(node) for node in cl.nodes ]) + """ ],
+                "Desc": [ """ + ', '.join([ '"' + desc.get_name() + '"' for desc in cl.desc ])  + """ ],
+                "Backs": [ """ + ', '.join([ '"' + back.get_name() + '"' for back in cl.backs ]) + """ ]
             }"""
 
     json = """
@@ -107,7 +99,7 @@ def save_demo(clusters):
         for d in cl.desc:
             descs_arr.append(d.get_name())
 
-        descs = ','.join(descs_arr);
+        descs = ','.join(descs_arr)
 
         res += f"{name}:{rank}:{name}:{nodeCount}:{descCount}:{descs}"; 
 
