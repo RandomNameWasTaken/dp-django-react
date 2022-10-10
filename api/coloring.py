@@ -9,9 +9,12 @@ def isOscillation(scc):
             return False
     return True
 
+def getChildren(cluster, isDesc):
+    if isDesc:
+        return cluster.desc
+    return cluster.backs
 
-# TODO zlucit
-def getSCCset(cluster):
+def getSCCset(cluster, reversed = False):
     result = set()
 
     queue = [cluster]
@@ -21,35 +24,16 @@ def getSCCset(cluster):
       result.add(curr)
       visited[curr] = True
 
-      for child in cluster.desc:
+      for child in getChildren(curr, reversed):
         if child in visited:
             continue
         queue.append(child)
       
     return result
-
-def getSCCsetReversed(cluster):
-    result = set()
-
-    queue = [cluster]
-    visited = {}
-    while queue:
-      curr = queue.pop()
-      result.add(curr)
-      visited[curr] = True
-
-
-      for child in cluster.backs:
-        if child in visited:
-            continue
-        queue.append(child)
-      
-    return result
-
 
 def compSCCcolor (cluster):
     normal = getSCCset(cluster)
-    reversed = getSCCsetReversed(cluster)
+    reversed = getSCCset(cluster, True)
 
     scc = normal.intersection(reversed)
 

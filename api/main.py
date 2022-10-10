@@ -94,6 +94,5 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, option, params, res
                 result_clusters[param][semantic] = clusters
 
     result_json = create_json(result_clusters, params, nodes)
-    print(result_json)
     return result_json
 
