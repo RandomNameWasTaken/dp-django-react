@@ -43,6 +43,7 @@ export default class Visualise extends React.Component {
             var canvas_number = Object.keys(fileData).length;
 
             var canvases = [];
+            var objects = [];
 
             var index = 0;
 
@@ -79,7 +80,14 @@ export default class Visualise extends React.Component {
 
                         index += 1;
                     }
+                    objects.push(React.createElement('div', { class: "row" }, canvases));
+                    canvases = [];
                 };
+                const div = React.createElement('div', { id : "canvases_react", class: "col" }, objects);
+                ReactDOM.render(
+                    div,
+                    document.getElementById('canvases')
+                );
 
             } else {
                 for (var key in fileData) {
@@ -109,13 +117,14 @@ export default class Visualise extends React.Component {
                         index += 1;
                     }
                 };
+
+                const div = React.createElement('div', { id : "canvases_react", class: "row" }, canvases);
+                ReactDOM.render(
+                    div,
+                    document.getElementById('canvases')
+                );
             }
 
-            const div = React.createElement('div', { id : "canvases_react", class: "row" }, canvases);
-            ReactDOM.render(
-                div,
-                document.getElementById('canvases')
-            );
             this.setState({ canvases_rendered : true });
 
 
