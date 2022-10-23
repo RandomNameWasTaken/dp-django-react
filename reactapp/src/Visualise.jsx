@@ -139,7 +139,6 @@ export default class Visualise extends React.Component {
             };
             
         } catch (error) {
-            console.log(error)
             return (
                 <div>
                     <h3>Cannot visualize</h3>

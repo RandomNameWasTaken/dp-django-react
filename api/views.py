@@ -12,7 +12,6 @@ def getData(request):
     aeon_text = request.COOKIES.get('resultData')
     aeon_text = aeon_text.split(" %%")
 
-    option = request.query_params.get('option')
     semantics = request.query_params.get('semantics').split(',')
     nodes_text = request.query_params.get('nodes')
     nodes = nodes_text.split(',') if nodes_text != None else []
@@ -24,10 +23,10 @@ def getData(request):
 
     if b :
         result = get_nodes(aeon_text)
-        clusters_json = compute_clusters(None, nodes, semantics, option, None, result)
+        clusters_json = compute_clusters(None, nodes, semantics, None, result)
     else:
         params = json.loads(params)
-        clusters_json = compute_clusters(aeon_text, nodes, semantics, option, params, None)
+        clusters_json = compute_clusters(aeon_text, nodes, semantics, params, None)
 
     return Response(clusters_json)
 

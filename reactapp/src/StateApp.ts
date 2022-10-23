@@ -3,7 +3,7 @@ export enum StateApp {
     Create = 1,
     LoadAeon = 2,
     LoadJson = 3,
-    Visualise = 4,
-    Config = 5
+    ChooseConfig = 4,
+    Visualise = 5
 }
   

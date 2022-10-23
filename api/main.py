@@ -19,7 +19,7 @@ def get_nodes(file_data):
 
     return result
 
-def compute_clusters(file_data, nodes_chosen, semantics_arr, option, params, result):
+def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
 
     result_clusters = {}
 
