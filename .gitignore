@@ -1,4 +1,5 @@
 reactapp/node_modules/*
+reactapp/node_modules/.cache/*
 reactapp/build/*
 api/__pycache__/*
 db.sqlite3
