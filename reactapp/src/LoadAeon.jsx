@@ -8,8 +8,6 @@ export default class LoadAeon extends React.Component {
     state = {
         value : this.props.value || StateApp.LoadAeon,
         selectedFile: this.props.selectedFile || null,
-
-        option: 1,
     };
   //  const [param_arguments, set_param_arguments] = useState();
 
@@ -25,8 +23,7 @@ export default class LoadAeon extends React.Component {
         // TODO chyba aspon jedno musi byt
         return;
       }
-      this.setState({ option : this.state.node ? 1 : 2 });
-
+      
       const file = this.state.selectedFile;
 
       var reader = new FileReader();
@@ -113,12 +110,7 @@ export default class LoadAeon extends React.Component {
                   <label for="async">Async</label>
                   <input type="checkbox" id="sync" name="semantics" value="2" onChange={event => this.setState({sync : true})}/>
                   <label for="sync">Sync</label>
-                  <br/>
-                  <input type="radio" id="node" name="option" value="1"  checked onChange={event => this.setState({node : true, whole: false})}/>
-                  <label for="node">from one node</label>
-                  <input type="radio" id="whole" name="option" value="2" disabled onChange={event => this.setState({whole : true, node: false})}/>
-                  <label for="whole">whole state space</label>
-                </form>
+                 </form>
 
               </div>
             </div>
