@@ -8,35 +8,6 @@ import axios from "axios";
 let param_arguments = {};
 let param_lines = {};
 
-function get_select_fun(fun, name) {
-  return (
-    <select name={name} id={name} onClick={fun}>
-      <option value="&"> & </option>
-      <option value="|"> | </option>
-      <option value="->"> -&gt; </option>
-      <option value="<=>"> &lt;=&gt; </option>
-    </select>
-  );
-}
-
-function choose_parametrization(fun, args, regulations, nodes, name) {
-  var result = [];
-  args.forEach(function (arg, index) {
-    if (result.length > 0) {
-      result.push(get_select_fun(fun, name + "_" + index))
-    }
-
-    if (regulations[nodes[name]][nodes[arg]] === '-') {
-      result.push('!')
-    }
-
-    result.push(arg)
-  });
-
-  return result.map(arg => { return arg; });
-}
-
-
 class ChooseConfig extends React.Component {
   state = {
     value : this.props.value || StateApp.ChooseConfig,
@@ -52,15 +23,11 @@ class ChooseConfig extends React.Component {
   };
 
 
-   handleParams = (event) => {
-      const id_arr = event.currentTarget.id.split('_');
-      const name = id_arr[0];
-      const index = id_arr[1];
-
+   handleCheckSyntax = (event) => {
+      const name = event.currentTarget.id;
       const element = event.target;
       const parent_id = element.closest("ul").getAttribute("id").split('_');
-
-      param_arguments[parent_id[1]][name][index - 1] = event.target.value; // TODO spravny operator
+      param_arguments[parent_id[1]][name] = event.target.value; // TODO syntax check
     };
 
     handleBackButton = event => {
@@ -77,15 +44,6 @@ class ChooseConfig extends React.Component {
         for (var c = 0; c < this.state.param_count; ++c) {
           this.state.params.forEach((value, key) => {
             
-            var args_concat = '';
-            var args = value["args"].split(',');
-            for (var i = 0; i < args.length; ++i) {
-              if (args_concat.length > 0) {
-                args_concat += " " + param_arguments[c][key][ i - 1 ] + " ";
-              }
-              args_concat += args[i];
-            }
-
             const expresion_arr = value["expr"].split("___parametrization___");
             var expr_snd = '';
             if (expresion_arr.length > 1) {
@@ -96,10 +54,10 @@ class ChooseConfig extends React.Component {
               param_lines[c] = []
             }
 
-            param_lines[c].push( "$" + key + " : " + expresion_arr[0] + " " + args_concat + " " + expr_snd);
+            param_lines[c].push( "$" + key + " : " + expresion_arr[0] + " " + param_arguments[c][key] + " " + expr_snd );
           });
-
         }
+        console.log(param_lines);
       }
     };
 
@@ -140,8 +98,6 @@ class ChooseConfig extends React.Component {
       event.preventDefault();
       this.setState({ param_count : this.state.param_count + 1 });
     }
-
-
 
   render() { 
 
@@ -208,33 +164,34 @@ class ChooseConfig extends React.Component {
         const counts = Array.from(Array(this.state.param_count).keys());
 
         if (this.state.params !== undefined) {
-  
-            var lis = [];
-            this.state.params.forEach((value, name) => {
+
+          counts.forEach((c) => {
+            if (param_arguments[c] === undefined) {
+              param_arguments[c] = {};
+            }
+          });
+
+          var lis = [];
+          this.state.params.forEach((value, name) => {
             const args = value["args"].split(',');
-            const choose_param = choose_parametrization(this.handleParams, args, this.state.reguls, this.state.nodes, name);
 
-            const expresion_arr = value["expr"].split("___parametrization___");
-            var expr_snd = '';
-            if (expresion_arr.length > 1) {
-                expr_snd = expresion_arr[1];
-            }
-
-            for (var c = 0; c < this.state.param_count; ++c) {
-                if (param_arguments[c] === undefined) {
-                param_arguments[c] = {}
-                }
-                if (param_arguments[c][name] === undefined) {
-                param_arguments[c][name] = args.map( arg => "&" );
-                param_arguments[c][name].pop();
-                }
-            }
-
-            lis.push(<li key={name}> {name}: {expresion_arr[0]}&nbsp;{choose_param}&nbsp;{expr_snd}</li>);
-            });
+            lis.push(
+                <li key={name}>
+                  <b>{name}</b>:
+                  <br/>
+                  <i>expression</i>: {value["expr"]}
+                  <br/>
+                  <i>can be parametrized by:</i> {value["args"]}
+                  <br/>
+                  <input type="text" name={name} id={name} onChange={this.handleCheckSyntax}/>
+                </li>);
+          });
 
             parametrization_selection = <div className="App">
-                                            <h3>Select parametrizations</h3>
+                                            <h3>Add parametrization</h3>
+                                            <p>
+                                              Your expression will be added instead of '___parametrization___'.
+                                            </p>
                                             <div class="row">
                                             {
                                               counts.map(c => {
