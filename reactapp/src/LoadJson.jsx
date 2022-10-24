@@ -37,7 +37,6 @@ export default class LoadJson extends React.Component {
               <h2>File Details:</h2>
                
                 <p>File Name: {this.state.selectedFile.name}</p>
-                <p>File Type: {this.state.selectedFile.type}</p>
    
             </div>
           );
@@ -45,39 +44,46 @@ export default class LoadJson extends React.Component {
         return (
         <div>
             <br />
-            <h4>Choose before Pressing the Upload button</h4>
+            <h6>Choose before Pressing the Process button</h6>
         </div>
         );
     };
 
     handleBackButton = event => {
-        this.setState({ value : StateApp.App });
+        this.setState({ value : StateApp.MainApp });
     };
 
-    render() { 
-        if (this.state.value === StateApp.App) {
-          return <App />;
-        }
+    render() {
 
-        if (this.state.value === StateApp.Visualise) {
-          return <Visualise fileData={this.state.resultData} />;
-        }        
+      if (this.state.value === StateApp.MainApp) {
+        return <App />;
+      }
 
-        return (
-            <div>
-                <h3>
+      return (
+          <div class="row loadJSONwrapper">
+            <div class="col">
+
+              <div class="row" className="App">
+                <h3 class="wrapperh3">
                   File Upload
                 </h3>
-                <div>
-                    <input type="file" onChange={this.onFileChange} accept=".json" />
-                    <button onClick={this.onFileUpload}>
+
+                <div class="col-lg-4 center">
+                    <input type="file" class="form-control center" onChange={this.onFileChange} accept=".aeon"/>
+                    <button onClick={this.onFileUpload} class="btn-dark wrapperh3 btn-md btn">
                       Process
                     </button>
                 </div>
-              {this.fileData()}
 
-              <input type="submit" value="Back" onClick={this.handleBackButton} />
+              {this.fileData()}
+              </div>
             </div>
+            <div class="row">
+              <div class="col-lg-2">
+                <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+              </div>
+            </div>
+          </div>
           );
     }
 }

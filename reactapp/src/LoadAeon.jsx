@@ -85,7 +85,7 @@ export default class LoadAeon extends React.Component {
         }
 
         return (
-          <div class="row">
+          <div class="row loadAEONwrapper">
             <div class="col">
               <div class="row" className="App">
                 <h3 class="wrapperh3">
