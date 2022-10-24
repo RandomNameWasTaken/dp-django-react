@@ -155,12 +155,34 @@ class ChooseConfig extends React.Component {
           }
           return (
             <div>
-              <h3>Do you want to save json file before visualisation?</h3>
-              <br/>
-              <button onClick={this.handleSave}>Yes</button>
-              <button onClick={this.handleNoSave}>No, only visualise</button>
+              <div class="row height-100"></div>
+              <div class="row height-200 ">
+                <form onSubmit={this.handleSubmit}> 
 
+                <div class="col-lg-6 btn wrapper" onClick={this.handleSave} >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                  </svg>
+                  <br/>
+                  <h3 class="wrapperh3">Download</h3>
+                  <p>Download precomputed clusters as JSON file.</p>
+                </div>
+
+                <div class="col-lg-6 btn wrapper" onClick={this.handleNoSave} >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-arrow-right-square" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+                  </svg>
+                  <br/>
+                  <h3 class="wrapperh3">Only visualize</h3>
+                  <p>Only visualise without saving precomputed data.</p>
+                </div>
+                
+                </form>
+              </div>
+            <div class="row height-1000"></div>
             </div>
+                      
           );
     }  
 
