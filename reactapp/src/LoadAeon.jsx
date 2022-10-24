@@ -57,16 +57,14 @@ export default class LoadAeon extends React.Component {
             <div>
               <h2>File Details:</h2>
                
-                <p>File Name: {this.state.selectedFile.name}</p>
-                <p>File Type: {this.state.selectedFile.type}</p>
-   
+                <p>File Name: {this.state.selectedFile.name}</p>   
             </div>
           );
         } else {
           return (
             <div>
               <br />
-              <h4>Choose before Pressing the Upload button</h4>
+              <h6>Choose before Pressing the Process button</h6>
             </div>
           );
         }
@@ -87,35 +85,46 @@ export default class LoadAeon extends React.Component {
         }
 
         return (
-          <div>
-            <div class="row">
-              <div class="col">
-                <h3>
+          <div class="row">
+            <div class="col">
+              <div class="row" className="App">
+                <h3 class="wrapperh3">
+                Type
+                </h3>
+                <form>
+                <div class="form-check form-check-inline">
+                  <input type="checkbox" class="cblack" id="async" name="semantics" value="1" onChange={event => this.setState({async : true})}/>
+                  <label for="async" class="form-check-label">Asynchroneous</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input type="checkbox" class="cblack" id="sync" name="semantics" value="2" onChange={event => this.setState({sync : true})}/>
+                  <label class="form-check-label" for="sync">Synchroneous</label>
+                </div>
+                </form>
+              </div>
+
+              <br/>
+              <br/>
+
+              <div class="row" className="App">
+                <h3 class="wrapperh3">
                   File Upload
                 </h3>
-                <div>
-                    <input type="file" onChange={this.onFileChange} accept=".aeon"/>
-                    <button onClick={this.onFileUpload}>
+
+                <div class="col-lg-4 center">
+                    <input type="file" class="form-control center" onChange={this.onFileChange} accept=".aeon"/>
+                    <button onClick={this.onFileUpload} class="btn-dark wrapperh3 btn-md btn">
                       Process
                     </button>
                 </div>
-              {this.fileData()}
-              </div>
-              <div class="col">
-                <h3>
-                Semantics
-                </h3>
-                <form>
-                  <input type="checkbox" id="async" name="semantics" value="1" onChange={event => this.setState({async : true})}/>
-                  <label for="async">Async</label>
-                  <input type="checkbox" id="sync" name="semantics" value="2" onChange={event => this.setState({sync : true})}/>
-                  <label for="sync">Sync</label>
-                 </form>
 
+              {this.fileData()}
               </div>
             </div>
             <div class="row">
-             <input type="submit" value="Back" class="col-sm-2" onClick={this.handleBackButton} />
+              <div class="col-lg-2">
+                <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+              </div>
             </div>
           </div>
           );

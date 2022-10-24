@@ -66,3 +66,17 @@
 .wrapperh3 {
   margin-top: 10px;
 }
+
+.cblack {
+  accent-color: #34495e;
+}
+
+#main {
+  height: 100vh;
+}
+
+.center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
