@@ -177,10 +177,9 @@ class ChooseConfig extends React.Component {
                   <h3 class="wrapperh3">Only visualize</h3>
                   <p>Only visualise without saving precomputed data.</p>
                 </div>
-                
+
                 </form>
               </div>
-            <div class="row height-1000"></div>
             </div>
                       
           );

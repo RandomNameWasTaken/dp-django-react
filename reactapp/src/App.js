@@ -87,7 +87,6 @@ class App extends React.Component {
               
             </form>
           </div>
-        <div class="row height-1000"></div>
         </div>
         );
     };
