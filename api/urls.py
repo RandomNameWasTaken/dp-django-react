@@ -5,4 +5,5 @@ urlpatterns = [
     path('get_data/', views.getData),
     path('get_nodes/', views.getNodes),
     path('get_gen_file/', views.getGeneratedAONFile),
+    path('check_syntax/', views.checkSyntax),
 ]

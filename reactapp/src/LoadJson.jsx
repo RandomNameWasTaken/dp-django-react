@@ -69,7 +69,7 @@ export default class LoadJson extends React.Component {
                 </h3>
 
                 <div class="col-lg-4 center">
-                    <input type="file" class="form-control center" onChange={this.onFileChange} accept=".aeon"/>
+                    <input type="file" class="form-control center" onChange={this.onFileChange} accept=".json"/>
                     <button onClick={this.onFileUpload} class="btn-dark wrapperh3 btn-md btn">
                       Process
                     </button>

@@ -3,6 +3,7 @@ import itertools
 import re
 import gc
 import time
+from warnings import catch_warnings
 
 from .expression import *
 from .helpers import *
@@ -55,7 +56,7 @@ def get_comp_expr(op, vals, nodes, node_count):
     return (CompExpr(expr1, expr2, fun, c2), node_count)
 
 
-def parse_rules(rules, nodes, node, node_count):
+def parse_rules(rules, nodes, node_count):
     rules = rules.replace(")", " ) ")
     rules = rules.replace("(", " ( ")
 
@@ -109,7 +110,7 @@ def parse(Lines):
                 parametrizations[node] = { "expr" : rules , "args" : ','.join(param_arguments)}
                 continue
 
-            (expr, node_count) = parse_rules(rules, nodes, node, node_count)
+            (expr, node_count) = parse_rules(rules, nodes, node_count)
 
             node_count = add_key(nodes, node, node_count)
             updates[nodes[node]] = expr
@@ -151,3 +152,18 @@ def read(Lines):
 
     return (nodes, regulations, updates, parametrizations)
 
+def check_param_syntax(line, nodes, node_count):
+    r_update_catch = re.compile('^\s*(?P<rules>.+)\s*$')
+    result = True
+
+    match = re.match(r_update_catch, line)
+    if match:
+        rules = match.group('rules')
+
+        try:
+            parse_rules(rules, nodes, node_count)
+            result = True
+        except Exception as e:
+            result = False
+
+    return result

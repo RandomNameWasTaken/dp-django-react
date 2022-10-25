@@ -1,6 +1,8 @@
 import './App.css';
 import React from 'react';
 import Visualise from './Visualise';
+import App from './App';
+import LoadAeon from './LoadAeon';
 import { StateApp } from './StateApp.ts';
 import axios from "axios";
 
@@ -28,6 +30,32 @@ class ChooseConfig extends React.Component {
       const element = event.target;
       const parent_id = element.closest("ul").getAttribute("id").split('_');
       param_arguments[parent_id[1]][name] = event.target.value; // TODO syntax check
+      
+      if (this.state.number_of_nodes === undefined) {
+        this.state.number_of_nodes = Object.keys(this.state.nodes).length;
+      }
+
+      const line = param_arguments[parent_id[1]][name];
+
+      if (line.length === 0) {
+        element.classList = [];
+        return;
+      }
+
+      axios
+        .get("http://127.0.0.1:8000/check_syntax", { params:
+            {
+              line : line,
+              nodes: this.state.nodes,
+              n : this.state.number_of_nodes,
+               } })
+        .then(response => {
+          if (response.data === true) {
+            element.classList = ['greenshadow'];
+          } else {
+            element.classList = ['redshadow'];
+          }
+      });
     };
 
     handleBackButton = event => {
@@ -57,7 +85,6 @@ class ChooseConfig extends React.Component {
             param_lines[c].push( "$" + key + " : " + expresion_arr[0] + " " + param_arguments[c][key] + " " + expr_snd );
           });
         }
-        console.log(param_lines);
       }
     };
 
@@ -100,6 +127,14 @@ class ChooseConfig extends React.Component {
     }
 
   render() { 
+
+    if (this.state.value === StateApp.MainApp) {
+      return <App />
+    }
+
+    if (this.state.value === StateApp.LoadAeon) {
+      return <LoadAeon />
+    }
 
     if (this.state.value === StateApp.Visualise) {
 
@@ -192,11 +227,11 @@ class ChooseConfig extends React.Component {
                                             <p>
                                               Your expression will be added instead of '___parametrization___'.
                                             </p>
-                                            <div class="row">
+                                            <div class="row back">
                                             {
                                               counts.map(c => {
                                                 return (
-                                                <div class="col">
+                                                <div class="col back">
                                                   <ul id={'param_' + c}>
                                                     {
                                                       lis.map(li => {
@@ -207,8 +242,11 @@ class ChooseConfig extends React.Component {
                                                 </div>);
                                               }, this)
                                             }
-                                            
-                                            <button class="col" onClick={this.addParam}> + </button>
+                                              <div class="col-lg-1" onClick={this.addParam} title="Add parametrization" >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-file-plus-fill" viewBox="0 0 16 16">
+                                                <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM8.5 6v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 1 0z"/>
+                                                </svg>
+                                              </div>
                                             </div>
                                           </div>
             }
@@ -232,8 +270,9 @@ class ChooseConfig extends React.Component {
                                         name={name}
                                         value={name}
                                         onChange={ (event) => { this.handleOnChange(event, name) }}
+                                        class="cblack"
                                         />
-                                        <label htmlFor={`custom-checkbox-${name}`}>{name}</label>
+                                        <label htmlFor={`custom-checkbox-${name}`}>&nbsp;{name}</label>
                                     </div>
                                     );
                                 })}
@@ -241,12 +280,28 @@ class ChooseConfig extends React.Component {
     
 
         return (
-            <div>
-            <form>
-                {nodes_selection}
-                {parametrization_selection}
-                <input type="submit" value="Send" onClick={this.handleNodesButton} />
-            </form>
+            <div class="back">
+              <form>
+                  {nodes_selection}
+                  {parametrization_selection}
+
+              </form>
+              <br/>
+                <div class="row">
+                  <div className="App">
+                    <button type="submit" value="Send" class="center btn-dark btn-sm btn " onClick={this.handleNodesButton} >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                        <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                      </svg>
+                      &nbsp;Send
+                    </button>
+                  </div>
+                  </div>
+              <div class="row back">
+                <div class="col-lg-2">
+                  <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                </div>
+              </div>
             </div>
         );                      
     }

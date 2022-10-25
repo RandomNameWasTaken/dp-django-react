@@ -88,3 +88,11 @@
 .loadJSONwrapper {
   margin-top: 120px;
 }
+
+.redshadow {
+  box-shadow: 5px 5px 5px red;
+}
+
+.greenshadow {
+  box-shadow: 5px 5px 5px green;
+}

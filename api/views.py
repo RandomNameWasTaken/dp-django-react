@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from django.http import HttpResponse
 from .main import *
 from .generator import generate_aeon
+from .parse import check_param_syntax
 import json
 import pickle
 
@@ -57,3 +58,13 @@ def getGeneratedAONFile(request):
     aeon_text = generate_aeon(number_of_nodes)
     print(aeon_text)
     return Response(aeon_text)
+
+@api_view(['GET'])
+def checkSyntax(request):
+    line = request.query_params.get('line')
+    nodes = json.loads(request.query_params.get('nodes'))
+    n = request.query_params.get('n')
+
+    result = check_param_syntax(line, nodes, n)
+    return Response(result)
+
