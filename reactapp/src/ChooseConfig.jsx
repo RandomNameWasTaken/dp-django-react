@@ -39,23 +39,22 @@ class ChooseConfig extends React.Component {
 
       if (line.length === 0) {
         element.classList = [];
-        return;
+      } else {
+        axios
+          .get("http://127.0.0.1:8000/check_syntax", { params:
+              {
+                line : line,
+                nodes: this.state.nodes,
+                n : this.state.number_of_nodes,
+                } })
+          .then(response => {
+            if (response.data === true) {
+              element.classList = ['greenshadow'];
+            } else {
+              element.classList = ['redshadow'];
+            }
+        });
       }
-
-      axios
-        .get("http://127.0.0.1:8000/check_syntax", { params:
-            {
-              line : line,
-              nodes: this.state.nodes,
-              n : this.state.number_of_nodes,
-               } })
-        .then(response => {
-          if (response.data === true) {
-            element.classList = ['greenshadow'];
-          } else {
-            element.classList = ['redshadow'];
-          }
-      });
     };
 
     handleBackButton = event => {
