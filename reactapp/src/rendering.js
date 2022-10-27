@@ -27,7 +27,7 @@ export function init3Dgraphics(element, data, nodes_ids) {
 
   const scene = new THREE.Scene();
   //scene.background = new THREE.Color( 0xd3d3d3 );
-  scene.background = new THREE.Color( 0xffffff);
+  scene.background = new THREE.Color( 0xf8f2ea);
   const camera = new THREE.PerspectiveCamera(75, element.width / element.height, 0.1, 1000)
   const renderer = new THREE.WebGLRenderer({
     canvas: element,

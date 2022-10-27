@@ -149,17 +149,23 @@ export default class Visualise extends React.Component {
             
         } catch (error) {
             return (
-                <div>
-                    <h3>Cannot visualize</h3>
-                    <input type="submit" value="Back" onClick={this.handleBackButton} />
+                <div class="back">
+                    <h3 class="wrapperh3">Cannot visualize</h3>
+                    <div class="row back">
+                        <div class="col-lg-2">
+                            <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                        </div>
+                    </div>
                 </div>
             );
         }
           
 
         return (
-            <div>
-                <input type="submit" value="Back" onClick={this.handleBackButton} />
+            <div class="row back">
+                <div class="col-lg-2">
+                  <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                </div>
             </div>
         );
     }
