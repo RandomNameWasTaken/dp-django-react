@@ -13,15 +13,12 @@ let param_lines = {};
 class ChooseConfig extends React.Component {
   state = {
     value : this.props.value || StateApp.ChooseConfig,
-
     checked_nodes : [],
-
     compute: false,
     asked : false,
-
     param_arguments: {},
-
     param_count : 1,
+    param_input_count : 0,
   };
 
 
@@ -229,6 +226,7 @@ class ChooseConfig extends React.Component {
                                             <div class="row back">
                                             {
                                               counts.map(c => {
+                                                this.setState({ param_input_count : this.state.param_input_count + lis.length });
                                                 return (
                                                 <div class="col back">
                                                   <ul id={'param_' + c}>
