@@ -1,5 +1,5 @@
 from .process import *
-from .cluster_by_more_rounds import *
+from .cluster import *
 from .parse import *
 from .json_creator import *
 from .semantic import *
