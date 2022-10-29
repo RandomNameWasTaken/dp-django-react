@@ -1,4 +1,6 @@
 import json as json_dumper
+import statistics
+import math
 
 def create_json(result, params, nodes):
     json = ''
@@ -59,6 +61,12 @@ def create_json_to_cluster(clusters):
         if json != '':
             json += ",\n"
 
+        (descendants, index_of_separate_element) = order_descendants(cl.desc)
+
+        index_str = ""
+        if index_of_separate_element is not None:
+            index_str =  ', "Index" : ' + str(index_of_separate_element)
+
         json += """
     """ + '"' + cl.get_name() + '"' + """:
             {
@@ -66,8 +74,8 @@ def create_json_to_cluster(clusters):
                 "NodeCount": """ + str(len(cl.nodes)) + """,
                 "Color": """ + cl.color + """,
                 "Nodes": [ """ + ', '.join([ str(node) for node in cl.nodes ]) + """ ],
-                "Desc": [ """ + ', '.join([ '"' + desc.get_name() + '"' for desc in cl.desc ])  + """ ],
-                "Backs": [ """ + ', '.join([ '"' + back.get_name() + '"' for back in cl.backs ]) + """ ]
+                "Desc": [ """ + ', '.join([ '"' + desc.get_name() + '"' for desc in descendants ])  + """ ],
+                "Backs": [ """ + ', '.join([ '"' + back.get_name() + '"' for back in cl.backs ]) + """ ] """ + index_str + """
             }"""
 
     json = """
@@ -107,4 +115,31 @@ def save_demo(clusters):
     with open('../../data.txt', 'w') as f:
         f.write(res)
 
+
+def order_descendants(desc):
+    desc = list(desc)
+
+    if len(desc) <= 2:
+        return (desc, None)
+
+
+    sorted_sizes = map((lambda x: len(x.nodes)), desc)
+    med = statistics.median(sorted_sizes)
+
+    distances = sorted([(i, abs(med - len(x.nodes))) for i,x in enumerate(desc)], key=(lambda t: t[1]))
+
+    new_desc = []
+    for d in distances:
+        new_desc.append(desc[d[0]])
+
+    # Choosing biggest/smallest element which could be placed in the centre - only if it is bigger/smaller than others
+    put_one_separately = None
+    last_index = len(distances) - 1
+    if distances[last_index][1] > distances[last_index - 1][1]:
+        put_one_separately = last_index
+
+    if distances[0][1] > distances[1][1]:
+        put_one_separately = 0
+
+    return (new_desc, put_one_separately)
 
