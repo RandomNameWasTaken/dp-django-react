@@ -172,9 +172,13 @@ class ChooseConfig extends React.Component {
           );
     }  
 
-    if (!this.state.nodes) {
+    if (!this.state.nodes && this.props.file_read) {
+        const data_params = {
+          file_data : this.props.file_read.join(" %% "),
+        };
+
         axios
-            .get("http://127.0.0.1:8000/get_nodes")
+            .get("http://127.0.0.1:8000/get_nodes", { params: data_params })
             .then(response => {
                 const result = JSON.parse(response.data);
                 this.setState({ nodes : result["nodes"] });
@@ -249,7 +253,7 @@ class ChooseConfig extends React.Component {
             }
     }
 
-    if (!this.state.parsed_nodes_keys || this.state.parsed_nodes_keys === null) {
+    if (this.state.nodes && (!this.state.parsed_nodes_keys || this.state.parsed_nodes_keys === null)) {
         const nodes_keys = Object.keys(this.state.nodes);
         this.setState({parsed_nodes_keys : nodes_keys});
     }
@@ -306,11 +310,9 @@ class ChooseConfig extends React.Component {
     if (this.state.compute) {
         const result_data_joined = this.props.file_read.join(" %% ");
 
-        document.cookie = "resultData=" + result_data_joined + "; SameSite=None; Secure";
-
         const nodes = this.state.checked_nodes.join(',');
-
         var data_params = {
+            file_data: result_data_joined,
             semantics: (this.props.async ? (this.props.sync ? "async,sync" : "async") : "sync"),
             nodes: nodes
         }

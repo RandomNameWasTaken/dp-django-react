@@ -10,8 +10,8 @@ import pickle
 @api_view(['GET'])
 def getData(request):
 
-    aeon_text = request.COOKIES.get('resultData')
-    aeon_text = aeon_text.split(" %%")
+    aeon_text = request.query_params.get('file_data').split(' %%')
+    print(aeon_text)
 
     semantics = request.query_params.get('semantics').split(',')
     nodes_text = request.query_params.get('nodes')
@@ -34,8 +34,9 @@ def getData(request):
 
 @api_view(['GET'])
 def getNodes(request):
-    aeon_text = request.COOKIES.get('resultData')
-    aeon_text = aeon_text.split(" %%")
+    aeon_text = request.query_params.get('file_data').split(' %%')
+    print(aeon_text)
+
 
     result = get_nodes(aeon_text)
     del result["updates"]
