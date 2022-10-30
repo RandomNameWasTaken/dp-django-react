@@ -60,8 +60,6 @@ class ChooseConfig extends React.Component {
 
     handleNodesButton = event => {
       event.preventDefault();
-      this.render();
-
       this.setState({ compute : true });
 
       if (this.state.params !== undefined) {
@@ -184,7 +182,7 @@ class ChooseConfig extends React.Component {
                 this.setState({ nodes : result["nodes"] });
 
                 if (result["parametrization"] !== undefined) {
-                    this.setState({ params : new Map(Object.entries(result["parametrization"])), reguls : result["regulations"] });
+                    this.setState({ params : new Map(Object.entries(result["parametrization"]))});
                 }
 
             });
@@ -230,7 +228,6 @@ class ChooseConfig extends React.Component {
                                             <div class="row back">
                                             {
                                               counts.map(c => {
-                                                this.setState({ param_input_count : this.state.param_input_count + lis.length });
                                                 return (
                                                 <div class="col back">
                                                   <ul id={'param_' + c}>
