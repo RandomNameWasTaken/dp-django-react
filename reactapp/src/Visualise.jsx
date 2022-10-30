@@ -53,6 +53,8 @@ export default class Visualise extends React.Component {
                 canvas_number = canvas_number * 2;
             }
 
+            var width_height = {};
+
             if (both_semantics) {
                 for (var key in fileData) {
 
@@ -77,6 +79,10 @@ export default class Visualise extends React.Component {
                         
 
                         canvases.push(React.createElement('canvas', { id : "canvas" + index, width: width, height: height, class: "col" }));
+
+                        const quotient = Math.floor(index/2);
+                        const remain = index % 2;
+                        width_height[index] = { 'w' : remain * width, 'h': quotient * height };
 
                         index += 1;
                     }
@@ -114,6 +120,9 @@ export default class Visualise extends React.Component {
                         }
 
                         canvases.push(React.createElement('canvas', { id : "canvas" + index, width: width, height: height, class: "col" }));
+                        const quotient = Math.floor(index/2);
+                        const remain = index % 2;
+                        width_height[index] = { 'w' : remain * width, 'h': quotient * height };
                         index += 1;
                     }
                 };
@@ -126,38 +135,39 @@ export default class Visualise extends React.Component {
             }
 
             this.setState({ canvases_rendered : true });
-
-
-            return (<div>DDD</div>);
+            this.setState({ width_height : width_height });
         }
 
-        try {
-            var index = 0;
-            for (var key in fileData) {
-                for (var sem in fileData[key]) {
-                    if (sem === 'Lines' || sem === 'Nodes') {
-                        continue
+        if (this.state.width_height) {
+            const width_height = this.state.width_height;
+            try {
+
+                var index = 0;
+                for (var key in fileData) {
+                    for (var sem in fileData[key]) {
+                        if (sem === 'Lines' || sem === 'Nodes') {
+                            continue
+                        }
+                        const data = fileData[key][sem];
+                        const canvas = document.getElementById("canvas" + index);
+
+                        init3Dgraphics(canvas, data, fileData[key]['Nodes'], width_height[index]['w'], width_height[index]['h']);
+
+                        index += 1;
                     }
-                    const data = fileData[key][sem];
-                    const canvas = document.getElementById("canvas" + index);
-
-                    init3Dgraphics(canvas, data, fileData[key]['Nodes']);
-
-                    index += 1;
-                }
-            };
-            
-        } catch (error) {
-            return (
-                <div class="back">
-                    <h3 class="wrapperh3">Cannot visualize</h3>
-                    <div class="row back">
-                        <div class="col-lg-2">
-                            <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                };
+            } catch (error) {
+                return (
+                    <div class="back">
+                        <h3 class="wrapperh3">Cannot visualize</h3>
+                        <div class="row back">
+                            <div class="col-lg-2">
+                                <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            );
+                );
+            }
         }
           
 
