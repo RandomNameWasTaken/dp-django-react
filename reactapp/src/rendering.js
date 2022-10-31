@@ -17,7 +17,7 @@ function dec2bin(dec, n) {
   return res;
 }
 
-export function init3Dgraphics(element, data, nodes_ids) {
+export function init3Dgraphics(element, data, nodes_ids, h, w) {
 
   if (data === undefined) {
     return false;
@@ -51,8 +51,9 @@ export function init3Dgraphics(element, data, nodes_ids) {
     // calculate pointer position in normalized device coordinates
     // (-1 to +1) for both components
 
-    mouse.x = ( event.clientX / element.width ) * 2 - 1;
-    mouse.y = - ( event.clientY / element.height ) * 2 + 1;
+    mouse.x = ( (event.clientX - h) / element.width) * 2 - 1;
+    mouse.y = - ( (event.clientY) / element.height) * 2 + 1;
+   // console.log(mouse);
   }
 
   const axesHelper = new THREE.AxesHelper(100);
