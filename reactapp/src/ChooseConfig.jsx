@@ -120,6 +120,13 @@ class ChooseConfig extends React.Component {
       this.setState({ param_count : this.state.param_count + 1 });
     }
 
+    hideParam = (event, c) => {
+      event.preventDefault();
+      var shouldHide = this.state.shouldHide;
+      shouldHide[c] = true;
+      this.setState({ shouldHide: shouldHide, param_count : this.state.param_count - 1 });
+    }
+
   render() { 
 
     if (this.state.value === StateApp.MainApp) {
@@ -204,6 +211,16 @@ class ChooseConfig extends React.Component {
             }
           });
 
+          if (this.state.shouldHide === undefined) {
+            this.state.shouldHide = counts.map( x => false );
+          }
+
+          if (this.state.shouldHide.length < counts.length) {
+            for (let i = 0; i < counts.length - this.state.shouldHide.length; i++) {
+                this.state.shouldHide.push(false);
+            }
+          }
+
           var lis = [];
           this.state.params.forEach((value, name) => {
             const args = value["args"].split(',');
@@ -228,8 +245,23 @@ class ChooseConfig extends React.Component {
                                             <div class="row back">
                                             {
                                               counts.map(c => {
+                                                var minus;
+                                                if (c == counts.length - 1 && c != 0) {
+                                                  minus = (
+                                                    <span class="col-lg-1" title="Delete parametrization" >
+                                                      <svg xmlns="http://www.w3.org/2000/svg"  onClick={(e) => this.hideParam(e, c)} width="25" height="25" fill="currentColor" class="bi bi-file-minus" viewBox="0 0 16 16">
+                                                        <path d="M5.5 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5z"/>
+                                                        <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+                                                      </svg>
+                                                    </span>
+                                                  );
+                                                }
+
                                                 return (
-                                                <div class="col back">
+                                                <div class="col back" className={this.state.shouldHide[c] === true ? 'hidden' : undefined}>
+                                                  <h5>
+                                                    No. {c + 1} &nbsp; {minus}
+                                                  </h5>
                                                   <ul id={'param_' + c}>
                                                     {
                                                       lis.map(li => {
