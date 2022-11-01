@@ -8,6 +8,7 @@ export default class LoadAeon extends React.Component {
     state = {
         value : this.props.value || StateApp.LoadAeon,
         selectedFile: this.props.selectedFile || null,
+        isOpen: false,
     };
   //  const [param_arguments, set_param_arguments] = useState();
 
@@ -19,8 +20,8 @@ export default class LoadAeon extends React.Component {
     // On file upload (click the upload button)
     onFileUpload = () => {
 
-      if (!this.state.sync && !this.state.async) {
-        // TODO chyba aspon jedno musi byt
+      if ((!this.state.sync && !this.state.async) || !this.state.selectedFile) {
+        this.openModal();
         return;
       }
       
@@ -74,6 +75,14 @@ export default class LoadAeon extends React.Component {
       this.setState({ value : StateApp.MainApp });
     };
 
+    openModal = (event) => {
+      this.setState({ isOpen : true });
+    }
+
+    closeModal = (event) => {
+      this.setState({ isOpen : false });
+    }
+
     render() {
         if (this.state.value === StateApp.MainApp) {
           return <App />;
@@ -86,6 +95,29 @@ export default class LoadAeon extends React.Component {
 
         return (
           <div class="row loadAEONwrapper">
+            {this.state.isOpen &&
+                  <div>
+                    <div class="overlay_styles"/>
+                    <div class="modal_styles">
+                      <div class="row centeredTopRight" onClick={this.closeModal}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16">
+                          <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708z"/>
+                        </svg>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-exclamation" viewBox="0 0 16 16">
+                          <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.553.553 0 0 1-1.1 0L7.1 4.995z"/>
+                        </svg>
+                        </div>
+                        <div class="col-6">
+                          File and at least one type is mandatory.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+              }
             <div class="col">
               <div class="row" className="App">
                 <h3 class="wrapperh3">
