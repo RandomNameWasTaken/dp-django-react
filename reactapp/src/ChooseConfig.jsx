@@ -60,7 +60,7 @@ class ChooseConfig extends React.Component {
     handleNodesButton = event => {
 
       const greens = document.getElementsByClassName('greenshadow');
-      if (greens.length != this.state.param_count * this.state.params.size) {
+      if (this.state.params !== undefined && greens.length != this.state.param_count * this.state.params.size) {
         this.openModal();
         return;
       }
