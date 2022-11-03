@@ -47,6 +47,12 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
   var raycaster = new THREE.Raycaster();
 
   function onMouseMove( event ) {
+    if (event.clientX > (w + element.width) || event.clientX < w
+    || event.clientY > (h + element.height) || event.clientY < h      
+    ) {
+      return;
+    }
+    //console.log('computing in ', index);
 
     // calculate pointer position in normalized device coordinates
     // (-1 to +1) for both components
