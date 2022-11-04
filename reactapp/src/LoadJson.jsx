@@ -59,6 +59,10 @@ export default class LoadJson extends React.Component {
         return <App />;
       }
 
+      if (this.state.value === StateApp.Visualise) {
+        return <Visualise fileData={this.state.resultData} />;
+      }
+
       return (
           <div class="row loadJSONwrapper">
             <div class="col">
