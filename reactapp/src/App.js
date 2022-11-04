@@ -63,7 +63,7 @@ class App extends React.Component {
               </svg>
               <br/>
               <h3 class="wrapperh3">Go to Aeon</h3>
-              <p>Some text</p>
+              <p>Redirection to AEON, where is possible to create .aeon file, which can be used in next steps.</p>
             </div>
 
             <div class="col-lg-4 btn wrapper" value={text2} onClick={this.handleButton2} >
@@ -72,7 +72,7 @@ class App extends React.Component {
               </svg>
               <br/>
               <h3 class="wrapperh3">Import Aeon file</h3>
-              <p>Some text</p>
+              <p>Import of file in .aeon format, which can be further processed with choosing type of Boolean network and starting state.</p>
             </div>
             
             <div class="col-lg-4 btn wrapper" value={text3} onClick={this.handleButton3} >
@@ -81,7 +81,7 @@ class App extends React.Component {
               </svg>
               <br/>
               <h3 >Import Json file</h3>
-              <p>Some text</p>
+              <p>Import of fine in .json format, which was created by this aplication. Without further description, this file is processed to final visualisation.</p>
             </div>
               
             </form>
