@@ -4,7 +4,6 @@ import React from 'react';
 import LoadAeon from './LoadAeon';
 import LoadJson from './LoadJson';
 import Visualise from './Visualise';
-import Create from './Create';
 
 import { StateApp } from './StateApp.ts'
 
