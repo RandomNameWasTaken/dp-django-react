@@ -28,7 +28,7 @@ class ChooseConfig extends React.Component {
       param_arguments[parent_id[1]][name] = event.target.value; // TODO syntax check
       
       if (this.state.number_of_nodes === undefined) {
-        this.state.number_of_nodes = Object.keys(this.state.nodes).length;
+        this.setState({ number_of_nodes : Object.keys(this.state.nodes).length });
       }
 
       const line = param_arguments[parent_id[1]][name];
@@ -60,7 +60,7 @@ class ChooseConfig extends React.Component {
     handleNodesButton = event => {
 
       const greens = document.getElementsByClassName('greenshadow');
-      if (this.state.params !== undefined && greens.length != this.state.param_count * this.state.params.size) {
+      if (this.state.params !== undefined && greens.length !== this.state.param_count * this.state.params.size) {
         this.openModal();
         return;
       }
@@ -69,7 +69,7 @@ class ChooseConfig extends React.Component {
       this.setState({ compute : true });
 
       if (this.state.params !== undefined) {
-        for (var c = 0; c < this.state.param_count; ++c) {
+        for (let c = 0; c < this.state.param_count; ++c) {
           this.state.params.forEach((value, key) => {
             
             const expresion_arr = value["expr"].split("___parametrization___");
@@ -226,7 +226,7 @@ class ChooseConfig extends React.Component {
           });
 
           if (this.state.shouldHide === undefined) {
-            this.state.shouldHide = counts.map( x => false );
+            this.setState({ shouldHide : counts.map( x => false ) });
           }
 
           if (this.state.shouldHide.length < counts.length) {
@@ -237,8 +237,6 @@ class ChooseConfig extends React.Component {
 
           var lis = [];
           this.state.params.forEach((value, name) => {
-            const args = value["args"].split(',');
-
             lis.push(
                 <li key={name}>
                   <b>{name}</b>:
@@ -260,7 +258,7 @@ class ChooseConfig extends React.Component {
                                             {
                                               counts.map(c => {
                                                 var minus;
-                                                if (c == counts.length - 1 && c != 0) {
+                                                if (c === counts.length - 1 && c !== 0) {
                                                   minus = (
                                                     <span class="col-lg-1" title="Delete parametrization" >
                                                       <svg xmlns="http://www.w3.org/2000/svg"  onClick={(e) => this.hideParam(e, c)} width="25" height="25" fill="currentColor" class="bi bi-file-minus" viewBox="0 0 16 16">
