@@ -4,6 +4,7 @@ import * as dat from 'dat.gui';
 import { Point } from './Point';
 import { Font } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { Interaction } from 'three.interaction-fixed';
 
 function dec2bin(dec, n) {
   var res = (dec >>> 0).toString(2);
@@ -39,28 +40,12 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
   renderer.sortObjects = false;
   renderer.render(scene, camera);
 
+  const interaction = new Interaction(renderer, scene, camera);
+
+// For showing text information about clusters
   const fontJson = require( "./fonts/Caviar_Dreams_Bold.json" );
   const font = new Font( fontJson );
   var texts = [];
-
-  var mouse = new THREE.Vector2();
-  var raycaster = new THREE.Raycaster();
-
-  function onMouseMove( event ) {
-    if (event.clientX > (w + element.width) || event.clientX < w
-    || event.clientY > (h + element.height) || event.clientY < h      
-    ) {
-      return;
-    }
-    //console.log('computing in ', index);
-
-    // calculate pointer position in normalized device coordinates
-    // (-1 to +1) for both components
-
-    mouse.x = ( (event.clientX - h) / element.width) * 2 - 1;
-    mouse.y = - ( (event.clientY) / element.height) * 2 + 1;
-   // console.log(mouse);
-  }
 
   const axesHelper = new THREE.AxesHelper(100);
   //scene.add(axesHelper);
@@ -92,9 +77,6 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
 
   const controls = new OrbitControls(camera, renderer.domElement);
 
-  var nodes_to_id = {};
-
-
   function resetMaterials() {
     for (let i = 0; i < scene.children.length; i++) {
       if (scene.children[i].material) {
@@ -103,80 +85,6 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
     }
   }
 
-
-  function hoverPieces() {
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(scene.children);
-
-    for (let i = 0; i < intersects.length; i++) {
-      const newMaterial = intersects[i].object.material.clone();
-      newMaterial.transparent = true;
-      newMaterial.opacity = 0.5;
-      intersects[i].object.material = newMaterial;
-    }
-  }
-
-  function onClick() {
-    texts.forEach((text) => { removeObject3D(text) });
-
-    raycaster.setFromCamera(mouse, camera);
-    let intersects = raycaster.intersectObjects(scene.children);
-
-    if (intersects.length === 1) {
-      const obj = intersects[0].object;
-      var text = '';
-      nodes_to_id[obj.id].forEach(function (elem) {
-        if (text !== '') {
-          text += ',';
-        }
-        text += ' (';
-        const bin = dec2bin(elem, nodes_ids.length);
-
-        for (let i = 0; i < bin.length; i++) {
-          if (bin[i] === '1') {
-            text += ' ' + nodes_ids[i];
-          }
-        }
-        text += ')';
-      });
-
-      const geometry = new TextGeometry(text, {
-        font : font,
-        size : 1,
-        height : 1,
-      });
-
-      const textMesh = new THREE.Mesh(geometry, [
-        new THREE.MeshPhongMaterial( { color : 0x000000 } )
-      ]);
-
-      textMesh.position.x = obj.position.x;
-      textMesh.position.y = obj.position.y;
-      textMesh.position.z = obj.position.z + 10;
-
-      texts.push(textMesh);
-      scene.add(textMesh);      
-    }
-  }
-
-  function removeObject3D(object3D) {
-    if (!(object3D instanceof THREE.Object3D)) return false;
-
-    // for better memory management and performance
-    if (object3D.geometry) object3D.geometry.dispose();
-
-    if (object3D.material) {
-        if (object3D.material instanceof Array) {
-            // for better memory management and performance
-            object3D.material.forEach(material => material.dispose());
-        } else {
-            // for better memory management and performance
-            object3D.material.dispose();
-        }
-    }
-    object3D.removeFromParent(); // the parent might be the scene or another Object3D, but it is sure to be removed this way
-    return true;
-}
 
   processClusters(scene, data);
   data = null;
@@ -187,15 +95,13 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
     }, 1000 / 5 );
 
     controls.update();
-    resetMaterials();
-    hoverPieces();
     renderer.render(scene, camera);
   }
 
   renderer.setAnimationLoop(animate);
 
-  window.addEventListener( 'click', onClick );
-  window.addEventListener( 'mousemove', onMouseMove );
+  //window.addEventListener( 'click', onClick );
+  //window.addEventListener( 'mousemove', onMouseMove );
 
   window.addEventListener('resize', function() {
     camera.aspect = element.width / element.width
@@ -246,7 +152,51 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
 
       cylinder.applyMatrix4(orientation)
       cylinder.position.set(midPoint.x, midPoint.y, midPoint.z);
-      nodes_to_id[cylinder.id] = data[id]["Nodes"];
+      cylinder.cursor = 'pointer';
+      cylinder.on('click', function(ev) {
+
+        texts.forEach(function (text) {
+            var selectedObject = scene.getObjectByName(text.name);
+            scene.remove( selectedObject );
+        });
+
+        var text = '';
+        data[id]["Nodes"].forEach(function (elem) {
+          if (text !== '') {
+            text += ',';
+          }
+          text += ' (';
+          const bin = dec2bin(elem, nodes_ids.length);
+
+          for (let i = 0; i < bin.length; i++) {
+            if (bin[i] === '1') {
+              text += ' ' + nodes_ids[i];
+            }
+          }
+          text += ')';
+        });
+
+        const geometry = new TextGeometry(text, {
+          font : font,
+          size : 1,
+          height : 1,
+        });
+
+        const textMesh = new THREE.Mesh(geometry, [
+          new THREE.MeshPhongMaterial( { color : 0x000000 } )
+        ]);
+
+        textMesh.position.x = cylinder.position.x;
+        textMesh.position.y = cylinder.position.y;
+        textMesh.position.z = cylinder.position.z + 10;
+
+        textMesh.name = text;
+
+        texts.push(textMesh);
+        scene.add(textMesh);
+
+      });
+
       return cylinder;
     }
 
