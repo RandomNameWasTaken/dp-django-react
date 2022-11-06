@@ -69,9 +69,9 @@ def compSCCcolor (cluster):
     
     if isStability(scc):
       color = '"hsla(295, 90%, 50%, 0.37)"'
-    
-    cluster.color = color
 
+    for cl in scc:
+        cl.color = color
 
 def cluster_coloring (clusters):
 
