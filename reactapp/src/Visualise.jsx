@@ -55,9 +55,9 @@ export default class Visualise extends React.Component {
 
 
             var width_height = {};
-
             if (both_semantics) {
                 for (var key in fileData) {
+                    canvases.push(React.createElement("h3", { class : "col-1"}, [Number(key) + 1]));
 
                     for (var sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
@@ -78,8 +78,10 @@ export default class Visualise extends React.Component {
                         }
                         width = Math.floor(window_sizes.innerWidth / (division + 1));
                         
+                        const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
+                        const head = <h3></h3>;
 
-                        canvases.push(React.createElement('canvas', { id : "canvas" + index, width: width, height: height, class: "col" }));
+                        canvases.push(React.createElement('div', { class: "col-5" }, [head, canvas]));
 
                         const quotient = Math.floor(index/2);
                         const remain = index % 2;
@@ -98,6 +100,7 @@ export default class Visualise extends React.Component {
 
             } else {
                 for (var key in fileData) {
+                    canvases.push(React.createElement("h3", { class : "col-1"}, [Number(key) + 1]));
 
                     for (var sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
@@ -109,26 +112,38 @@ export default class Visualise extends React.Component {
 
                         var width = window_sizes.innerWidth;
                         var height =  window_sizes.innerHeight;
-                        if (canvas_number > 1) {
 
-                            const division = Math.floor(canvas_number/2);
-                            if (division <= 1) {
-                                height = window_sizes.innerHeight;
-                            } else {
-                                height =  Math.floor(window_sizes.innerHeight/2);
-                            }
-                            width = Math.floor(window_sizes.innerWidth / (division + 1));
+                        const division = Math.floor(canvas_number/2);
+                        if (division <= 1) {
+                            height = window_sizes.innerHeight;
+                        } else {
+                            height = Math.floor(window_sizes.innerHeight/2);
                         }
+                        width = Math.floor(window_sizes.innerWidth / (division + 1));
 
-                        canvases.push(React.createElement('canvas', { id : "canvas" + index, width: width, height: height, class: "col" }));
+                        const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
+                        const head = <h3></h3>;
+
+                        canvases.push(React.createElement('div', { class: "col-5" }, [head, canvas]));
+
                         const quotient = Math.floor(index/2);
                         const remain = index % 2;
                         width_height[index] = { 'w' : remain * width, 'h': quotient * height };
+
                         index += 1;
+                    }
+
+                    if (index % 2 == 0) {
+                        objects.push(React.createElement('div', { class: "row" }, canvases));
+                        canvases = [];
                     }
                 };
 
-                const div = React.createElement('div', { id : "canvases_react", class: "row" }, canvases);
+                if (canvases.length > 0) {
+                    objects.push(React.createElement('div', { class: "row" }, canvases));
+                }
+
+                const div = React.createElement('div', { id : "canvases_react", class: "col" }, objects);
                 ReactDOM.render(
                     div,
                     document.getElementById('canvases')
