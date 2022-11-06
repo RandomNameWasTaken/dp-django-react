@@ -41,7 +41,7 @@ def removeNonterminalNodes(scc, cluster):
 
     for element in scc:
         for child in getChildren(element, False):
-            if child not in scc:
+            if child not in scc and element in new_scc:
                 new_scc.remove(element)
                 break
 
