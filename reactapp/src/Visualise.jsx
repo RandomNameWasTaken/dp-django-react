@@ -14,8 +14,7 @@ function getWindowSize() {
 
 export default class Visualise extends React.Component {
     state = {
-        value : this.props.value || StateApp.Visualise,
-        number_of_nodes : 10,
+        value : this.props.value || StateApp.Visualise
     };
 
     handleBackButton = event => {
@@ -52,6 +51,8 @@ export default class Visualise extends React.Component {
                 both_semantics = true;
                 canvas_number = canvas_number * 2;
             }
+            this.setState({ both : both_semantics });
+
 
             var width_height = {};
 
@@ -169,12 +170,23 @@ export default class Visualise extends React.Component {
                 );
             }
         }
-          
+
+        var headline;
+        if (this.state.both) {
+            headline =
+                    <div class="row">
+                        <h3 class="col-6 App">Asymetric</h3>
+                        <h3 class="col-6 App">Symetric</h3>
+                    </div>;
+        }
 
         return (
             <div class="row back">
-                <div class="col-lg-2">
-                  <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                <div class="col">
+                    <div class="col-lg-2">
+                    <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                    </div>
+                    {headline}
                 </div>
             </div>
         );
