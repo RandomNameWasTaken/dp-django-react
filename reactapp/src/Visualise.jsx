@@ -11,6 +11,17 @@ function getWindowSize() {
     return {innerWidth, innerHeight};
 }
 
+function dec2bin(dec, n) {
+  dec = Number(dec);
+  var res = dec.toString(2);
+
+  if (res.length < n) {
+    for (let i = 0; i < (n - res.length); ++i) {
+      res = '0' + res;
+    }
+  }
+  return res;
+}
 
 export default class Visualise extends React.Component {
     state = {
@@ -21,6 +32,31 @@ export default class Visualise extends React.Component {
         window.location.reload(false);
     };
 
+    findStartingCluster = (data, param, sem) => {
+        if (this.state.startState !== undefined) {
+            return;
+        }
+
+        const nodes = data[param]['Nodes'];
+        var startStateId = null;
+
+        for (var key in data[param][sem]) {
+            if (data[param][sem][key]['Rank'] === 0 && startStateId === null) {
+                const splitted = key.split('_');
+                startStateId = splitted[1];
+                break;
+            }
+        }
+
+        const startStateBin = dec2bin(startStateId, Object.keys(nodes).length);
+        var startState = '';
+        for (var i = 0; i < startStateBin.length; i++) {
+            if (startStateBin[i] === '1') {
+                startState += nodes[i];
+            }
+        }
+        this.setState({ startState : startState });
+    }
 
     render() {
         const fileData = this.props.fileData;
@@ -67,6 +103,8 @@ export default class Visualise extends React.Component {
                             continue
                         }
 
+                        this.findStartingCluster(fileData, key, sem);
+
                         var width = window_sizes.innerWidth;
                         var height =  window_sizes.innerHeight;
 
@@ -109,6 +147,8 @@ export default class Visualise extends React.Component {
                             }
                             continue
                         }
+
+                        this.findStartingCluster(fileData, key, sem);
 
                         var width = window_sizes.innerWidth;
                         var height =  window_sizes.innerHeight;
@@ -198,8 +238,9 @@ export default class Visualise extends React.Component {
         return (
             <div class="row back">
                 <div class="col">
-                    <div class="col-lg-2">
-                    <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                    <div class="row">
+                        <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
+                        <h3 class="wrapperh3 App"> {'Init state ' + this.state.startState}</h3>
                     </div>
                     {headline}
                 </div>
