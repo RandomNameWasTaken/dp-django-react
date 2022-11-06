@@ -1,4 +1,7 @@
 
+from copy import deepcopy
+
+
 def isStability(scc):
     return len(scc) == 1
 
@@ -14,7 +17,7 @@ def getChildren(cluster, isDesc):
         return cluster.desc
     return cluster.backs
 
-def getSCCset(cluster, reversed = False):
+def getSCCset(cluster, reversed = False, checkOnlyThese = {}):
     result = set()
 
     queue = [cluster]
@@ -27,15 +30,38 @@ def getSCCset(cluster, reversed = False):
       for child in getChildren(curr, reversed):
         if child in visited:
             continue
-        queue.append(child)
+
+        if checkOnlyThese == {} or child in checkOnlyThese:
+            queue.append(child)
       
     return result
+
+def removeNonterminalNodes(scc, cluster):
+    new_scc = deepcopy(scc)
+
+    for element in scc:
+        for child in getChildren(element, False):
+            if child not in scc:
+                new_scc.remove(element)
+                break
+
+    if len(new_scc) == len(scc):
+        return scc
+
+    normal = getSCCset(cluster, False, new_scc)
+    reversed = getSCCset(cluster, True, new_scc)
+    return normal.intersection(reversed)
+
 
 def compSCCcolor (cluster):
     normal = getSCCset(cluster)
     reversed = getSCCset(cluster, True)
 
     scc = normal.intersection(reversed)
+
+    scc = removeNonterminalNodes(scc, cluster)
+    if len(scc) == 0:
+        return
 
     color = '"hsla(187, 90%, 50%, 0.53)"'
     if isOscillation(scc):
