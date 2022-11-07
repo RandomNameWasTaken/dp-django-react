@@ -79,7 +79,7 @@ def parse(Lines):
     r_skip = re.compile('^\s*#')
     r_update_catch = re.compile('^\s*\$(?P<node>\w+)\s*:\s*(?P<rules>.+)\s*$')
     r_regul = re.compile('^\s*(?P<regulator>\w+)\s*-(?P<kind>>|\|)\s*(?P<node>\w+)')
-    r_param = re.compile('.*( |:)(?P<parametrization>(\w|_)+\(.+\))')
+    r_param = re.compile('.*(?P<parametrization>(\w|_)+\(.+\))')
     r_begin_of_param = re.compile('(\w|_)+\(')
     r_param_inside = re.compile('.*\((.*)\)')
 

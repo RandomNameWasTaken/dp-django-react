@@ -61,9 +61,11 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
     else:
         for param in params:
 
+            f_data = file_data
             for line in params[param]:
-                file_data.append(line)
-                (nodes, regulations, updates, _) = read(file_data)
+                f_data.append(line)
+
+            (nodes, regulations, updates, _) = read(file_data)
 
             state = []
             for i in nodes:
