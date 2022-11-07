@@ -5,8 +5,6 @@ from .json_creator import *
 from .semantic import *
 from .coloring import cluster_coloring
 
-from datetime import datetime
-
 def get_nodes(file_data):
     (nodes, regulations, updates, parametrizations) = read(file_data)
 

@@ -1,10 +1,4 @@
-import sys
-import itertools 
 import re
-import gc
-import time
-from warnings import catch_warnings
-
 from .expression import *
 from .helpers import *
 
