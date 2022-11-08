@@ -95,7 +95,7 @@ export default class Visualise extends React.Component {
             var width_height = {};
             if (both_semantics) {
                 for (var key in fileData) {
-                    canvases.push(React.createElement("h3", { class : "col-1"}, [ <InfoIcon title={fileData[key]["Lines"]}/>, Number(key) + 1]));
+                    canvases.push(React.createElement("h3", { class : "col-1"}, [ fileData[key]["Lines"].length > 0 ? <InfoIcon title={fileData[key]["Lines"]}/> : '', Number(key) + 1]));
 
                     for (var sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
@@ -140,7 +140,7 @@ export default class Visualise extends React.Component {
 
             } else {
                 for (var key in fileData) {
-                    canvases.push(React.createElement("h3", { class : "col-1"}, [Number(key) + 1]));
+                    canvases.push(React.createElement("h3", { class : "col-1"}, [ fileData[key]["Lines"].length > 0 ? <InfoIcon title={fileData[key]["Lines"]}/> : '', Number(key) + 1]));
 
                     for (var sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
