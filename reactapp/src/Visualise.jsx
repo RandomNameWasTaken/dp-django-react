@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
 import { init3Dgraphics } from './rendering.js';
-import { StateApp } from './StateApp.ts'
+import { StateApp } from './StateApp.ts';
+import InfoIcon from './Icons/InfoIcon';
+
 
 function getWindowSize() {
     const main_div = document.getElementById('root');
@@ -93,7 +95,7 @@ export default class Visualise extends React.Component {
             var width_height = {};
             if (both_semantics) {
                 for (var key in fileData) {
-                    canvases.push(React.createElement("h3", { class : "col-1"}, [Number(key) + 1]));
+                    canvases.push(React.createElement("h3", { class : "col-1"}, [ <InfoIcon title={fileData[key]["Lines"]}/>, Number(key) + 1]));
 
                     for (var sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
