@@ -242,7 +242,7 @@ export default class Visualise extends React.Component {
                 <div class="col">
                     <div class="row">
                         <input type="submit" value="Back" class="btn-dark btn-md btn" onClick={this.handleBackButton} />
-                        <h3 class="wrapperh3 App"> {'Init state ' + this.state.startState}</h3>
+                        <h3 class="wrapperh3 App"> {'Initial state ' + this.state.startState}</h3>
                     </div>
                     {headline}
                 </div>

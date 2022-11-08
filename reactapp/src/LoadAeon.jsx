@@ -128,11 +128,11 @@ export default class LoadAeon extends React.Component {
                 <form>
                 <div class="form-check form-check-inline">
                   <input type="checkbox" class="cblack" id="async" name="semantics" value="1" onChange={event => this.setState({async : !this.state.async})}/>
-                  <label for="async" class="form-check-label">Asynchroneous</label>
+                  <label for="async" class="form-check-label">Asynchronous</label>
                 </div>
                 <div class="form-check form-check-inline">
                   <input type="checkbox" class="cblack" id="sync" name="semantics" value="2" onChange={event => this.setState({sync : !this.state.sync})}/>
-                  <label class="form-check-label" for="sync">Synchroneous</label>
+                  <label class="form-check-label" for="sync">Synchronous</label>
                 </div>
                 </form>
               </div>
