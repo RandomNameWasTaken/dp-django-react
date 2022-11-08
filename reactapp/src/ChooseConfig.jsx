@@ -23,6 +23,7 @@ class ChooseConfig extends React.Component {
     param_arguments: {},
     param_count : 1,
     isOpen: false,
+    shouldHide: [],
   };
 
    handleCheckSyntax = (event) => {
