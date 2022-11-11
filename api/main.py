@@ -30,9 +30,10 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
         for i in result["nodes"]:
             state.append(0)
         
-        for input_key in nodes_chosen:
-            index = result["nodes"][input_key]
-            state[index] = 1
+        if nodes_chosen != ['']: # [''] == no nodes choose
+            for input_key in nodes_chosen:
+                index = result["nodes"][input_key]
+                state[index] = 1
 
         state = [str(i) for i in state]
         state = ''.join(state)
