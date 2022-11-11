@@ -13,6 +13,7 @@ import CloseIcon from './Icons/CloseIcon';
 import ExclaimIcon from './Icons/ExclaimIcon';
 import PlusIcon from './Icons/PlusIcon';
 import MinusIcon from './Icons/MinusIcon';
+import SendIcon from './Icons/SendIcon';
 
 
 let param_arguments = {};
