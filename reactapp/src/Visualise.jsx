@@ -148,10 +148,10 @@ export default class Visualise extends React.Component {
                 );
 
             } else {
-                for (var key in fileData) {
+                for (key in fileData) {
                     canvases.push(React.createElement("h3", { class : "col-1"}, [ fileData[key]["Lines"].length > 0 ? <InfoIcon title={fileData[key]["Lines"]}/> : '', Number(key) + 1]));
 
-                    for (var sem in fileData[key]) {
+                    for (sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
                             if (sem === 'NumberOfNodes') {
                                 this.setState({ number_of_nodes : fileData[key][sem] });
@@ -161,8 +161,8 @@ export default class Visualise extends React.Component {
 
                         this.findStartingCluster(fileData, key, sem);
 
-                        var width = window_sizes.innerWidth;
-                        var height =  window_sizes.innerHeight;
+                        width = window_sizes.innerWidth;
+                        height =  window_sizes.innerHeight;
 
                         const division = Math.floor(canvas_number/2);
                         if (division <= 1) {
@@ -184,7 +184,7 @@ export default class Visualise extends React.Component {
                         index += 1;
                     }
 
-                    if (index % 2 == 0) {
+                    if (index % 2 === 0) {
                         objects.push(React.createElement('div', { class: "row" }, canvases));
                         canvases = [];
                     }
@@ -209,9 +209,9 @@ export default class Visualise extends React.Component {
             const width_height = this.state.width_height;
             try {
 
-                var index = 0;
-                for (var key in fileData) {
-                    for (var sem in fileData[key]) {
+                index = 0;
+                for (key in fileData) {
+                    for (sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
                             continue
                         }
