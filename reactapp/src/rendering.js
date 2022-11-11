@@ -207,7 +207,7 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
 
   // prevPoint, point - upper and downer middle points of cylinder
   // dirPoint - point to which direction of cylinder (dir vector) should go 
-  function clustering(scene, data, id, max_branching, branch_count, prevPointFirst, pointFirst, biggestRank) {
+  function clustering(scene, data, id, max_branching, prevPointFirst, pointFirst, biggestRank) {
 
     if (id === undefined) {
       console.log("Id is undefined in clustering");
@@ -353,7 +353,7 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
     const firstStartPoint = new Point(0, firstHeight, 0);
     const firstEndPoint = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
 
-    clustering(scene, data, root_cluster_key, max_branching, 1, firstStartPoint, firstEndPoint, biggestRank);
+    clustering(scene, data, root_cluster_key, max_branching, firstStartPoint, firstEndPoint, biggestRank);
   }
 }
 
