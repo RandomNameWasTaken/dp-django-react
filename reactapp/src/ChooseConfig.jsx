@@ -9,6 +9,10 @@ import axios from "axios";
 import CoffeeIcon from './Icons/CoffeeIcon';
 import DownloadIcon from './Icons/DownloadIcon';
 import OnlyVisualiseIcon from './Icons/OnlyVisualiseIcon';
+import CloseIcon from './Icons/CloseIcon';
+import ExclaimIcon from './Icons/ExclaimIcon';
+import PlusIcon from './Icons/PlusIcon';
+import MinusIcon from './Icons/MinusIcon';
 
 
 let param_arguments = {};
@@ -260,11 +264,8 @@ class ChooseConfig extends React.Component {
                                                 var minus;
                                                 if (c === counts.length - 1 && c !== 0) {
                                                   minus = (
-                                                    <span class="col-lg-1" title="Delete parametrization" >
-                                                      <svg xmlns="http://www.w3.org/2000/svg"  onClick={(e) => this.hideParam(e, c)} width="25" height="25" fill="currentColor" class="bi bi-file-minus" viewBox="0 0 16 16">
-                                                        <path d="M5.5 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5z"/>
-                                                        <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
-                                                      </svg>
+                                                    <span class="col-lg-1" title="Delete parametrization" onClick={(e) => this.hideParam(e, c)} >
+                                                      <MinusIcon />
                                                     </span>
                                                   );
                                                 }
@@ -285,9 +286,7 @@ class ChooseConfig extends React.Component {
                                               }, this)
                                             }
                                               <div class="col-lg-1" onClick={this.addParam} title="Add parametrization" >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-file-plus-fill" viewBox="0 0 16 16">
-                                                <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM8.5 6v1.5H10a.5.5 0 0 1 0 1H8.5V10a.5.5 0 0 1-1 0V8.5H6a.5.5 0 0 1 0-1h1.5V6a.5.5 0 0 1 1 0z"/>
-                                                </svg>
+                                                <PlusIcon />
                                               </div>
                                             </div>
                                           </div>
@@ -329,16 +328,12 @@ class ChooseConfig extends React.Component {
                     <div class="overlay_styles"/>
                     <div class="modal_styles">
                       <div class="row centeredTopRight" onClick={this.closeModal}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16">
-                          <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708z"/>
-                        </svg>
+                        <CloseIcon />
                       </div>
 
                       <div class="row">
                         <div class="col-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-exclamation" viewBox="0 0 16 16">
-                          <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.553.553 0 0 1-1.1 0L7.1 4.995z"/>
-                        </svg>
+                          <ExclaimIcon />
                         </div>
                         <div class="col-6">
                           Some parametrizations are not written correctly.
