@@ -337,14 +337,12 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
   function processClusters(scene, data) {
 
     var root_cluster_key = undefined;
-    var maxCluster = 1;
     var biggestRank = 0;
     Object.entries(data).forEach(([k,v]) => {
       if (v["Rank"] === 0) {
         root_cluster_key = k;
       }
       biggestRank = Math.max(v["Rank"], biggestRank);
-      maxCluster = Math.max(maxCluster, v.NodeCount);
     });
 
     const max_branching = compMaxBranching(data, root_cluster_key);
