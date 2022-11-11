@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { Point } from './Point';
-import { Font } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { Interaction } from 'three.interaction-fixed';
 
 function dec2bin(dec, n) {
@@ -40,22 +38,21 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
   renderer.sortObjects = false;
   renderer.render(scene, camera);
 
-  const interaction = new Interaction(renderer, scene, camera);
+  new Interaction(renderer, scene, camera);
 
 // For showing text information about clusters
-  const fontJson = require( "./fonts/Caviar_Dreams_Bold.json" );
-  const font = new Font( fontJson );
   var texts = [];
 
-  const axesHelper = new THREE.AxesHelper(100);
+  //const axesHelper = new THREE.AxesHelper(100);
   //scene.add(axesHelper);
 
+/*
   const gui = new dat.GUI();
   const options = {
     sphereColor : 0xffea00,
     wireframe: false,
   };
-    
+*/    
   const pointLight = new THREE.PointLight(0xffffff)
   pointLight.position.set(20, 20, 20);
 
@@ -64,8 +61,8 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
 
   scene.add(pointLight, ambientLight);
 
-  const lightHelper = new THREE.PointLightHelper(pointLight);  // shows position of lighsource
-  const gridHelper = new THREE.GridHelper(30, 20);
+  //const lightHelper = new THREE.PointLightHelper(pointLight);  // shows position of lighsource
+  //const gridHelper = new THREE.GridHelper(30, 20);
 
   //scene.add(lightHelper, gridHelper);
 
@@ -76,15 +73,6 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
   });
 
   const controls = new OrbitControls(camera, renderer.domElement);
-
-  function resetMaterials() {
-    for (let i = 0; i < scene.children.length; i++) {
-      if (scene.children[i].material) {
-        scene.children[i].material.opacity = 1.0;
-      }
-    }
-  }
-
 
   processClusters(scene, data);
   data = null;
@@ -106,13 +94,16 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
     renderer.setSize(canvas.width, canvas.width);
   });
 
+
   function calcColor(max, val) {
     return "hsla(147, 0%, 50%, 1)";
+    /*
     const min = 0
     var minHue = 240, maxHue=0;
     var curPercent = (val - min) / (max-min);
     var colString = "hsl(" + ((curPercent * (maxHue-minHue) ) + minHue) + ",65%,50%)";
     return colString;
+    */
   }
 
   function createCylinder( data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max) {
@@ -205,10 +196,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
     var tuple = Object.freeze({ id: id, prevPoint: prevPointFirst, point: pointFirst });
     var stack = [ tuple ];
  
-    var count = 0;
-
     while (stack.length > 0) {
-      ++count;
       const stackElement = stack.pop();
       const current = stackElement.id;
       const prevPoint = stackElement.prevPoint;
@@ -230,12 +218,11 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
 
             var newStartPoint = new Point(point.x, point.y, point.z); // to make copy
 
-            var offset = 0;
-            if (childsChildCount === cluster["Desc"].length && childsChildCount !== 0 && data[cluster["Desc"][0]]["Desc"].length !== 0) {
+/*            if (childsChildCount === cluster["Desc"].length && childsChildCount !== 0 && data[cluster["Desc"][0]]["Desc"].length !== 0) {
               cylinder = undefined; // join same-like cluster to one - draw one cluster with bigger height
               newStartPoint = new Point(prevPoint.x, prevPoint.y, prevPoint.z); // to make copy
             }
-
+*/
             const dirVector = new THREE.Vector3(point.x - prevPoint.x, point.y - prevPoint.y, point.z - prevPoint.z);
             const newPoint = new Point(dirVector.x + point.x, dirVector.y + point.y, dirVector.z + point.z);
 
@@ -250,15 +237,13 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         const h = childCount / 2;
 
         var fi = i * theta;
-        if (i <= h && i % 2 == 1) {
+        if (i <= h && i % 2 === 1) {
           fi = (Math.ceil(h) - 1 + i) * theta;
-        } else if (i > h && (childCount - 1 - i) % 2 == 0) {
+        } else if (i > h && (childCount - 1 - i) % 2 === 0) {
           fi = (childCount - i) * theta;
-        } if (i > h && (childCount - 1 - i) % 2 == 1) {
+        } if (i > h && (childCount - 1 - i) % 2 === 1) {
           fi = (Math.ceil(h) - 1 + childCount - i) * theta;
         }
-
-        var polarCoor = (fi, childsChildCount);
 
         var xPos = childsChildCount * Math.cos(fi);
         var zPos = childsChildCount * Math.sin(fi);
