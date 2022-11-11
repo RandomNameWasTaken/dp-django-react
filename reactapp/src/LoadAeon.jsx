@@ -121,7 +121,7 @@ export default class LoadAeon extends React.Component {
             <div class="col">
               <div class="row" className="App">
                 <h3 class="wrapperh3">
-                Type
+                Type of Boolean network
                 </h3>
                 <form>
                 <div class="form-check form-check-inline">
