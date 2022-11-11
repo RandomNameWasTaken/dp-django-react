@@ -351,7 +351,7 @@ class ChooseConfig extends React.Component {
               <br/>
                 <div class="row">
                   <div className="App">
-                    <button type="submit" value="Send" class="center btn-dark btn-sm btn " onClick={this.handleNodesButton} >
+                    <button type="submit" value="Send" class="btn-dark wrapperh3 btn-md btn " onClick={this.handleNodesButton} >
                       <SendIcon />&nbsp;Send
                     </button>
                   </div>
