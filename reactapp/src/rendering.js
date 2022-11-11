@@ -18,7 +18,7 @@ function dec2bin(dec, n) {
   return res;
 }
 
-export function init3Dgraphics(element, data, nodes_ids, h, w) {
+export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
 
   if (data === undefined) {
     return false;
@@ -29,13 +29,13 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
   const scene = new THREE.Scene();
   //scene.background = new THREE.Color( 0xd3d3d3 );
   scene.background = new THREE.Color( 0xf8f2ea);
-  const camera = new THREE.PerspectiveCamera(75, element.width / element.height, 0.1, 1000)
+  const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000)
   const renderer = new THREE.WebGLRenderer({
-    canvas: element,
+    canvas: canvas,
   });
 
   renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize(element.width, element.height); // full size
+  renderer.setSize(canvas.width, canvas.height); // full size
   camera.position.setZ(30); // for better perspective
   renderer.sortObjects = false;
   renderer.render(scene, camera);
@@ -70,9 +70,9 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
   //scene.add(lightHelper, gridHelper);
 
   window.addEventListener('resize', function() {
-    camera.aspect = element.width / element.height;
+    camera.aspect = canvas.width / canvas.height;
     camera.updateProjectionMatrix();
-    renderer.setSize(element.width);
+    renderer.setSize(canvas.width);
   });
 
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -100,13 +100,10 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
 
   renderer.setAnimationLoop(animate);
 
-  //window.addEventListener( 'click', onClick );
-  //window.addEventListener( 'mousemove', onMouseMove );
-
   window.addEventListener('resize', function() {
-    camera.aspect = element.width / element.width
+    camera.aspect = canvas.width / canvas.width
     camera.updateProjectionMatrix();
-    renderer.setSize(element.width, element.width);
+    renderer.setSize(canvas.width, canvas.width);
   });
 
   function calcColor(max, val) {
@@ -175,24 +172,7 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
           text += ')';
         });
 
-        const geometry = new TextGeometry(text, {
-          font : font,
-          size : 1,
-          height : 1,
-        });
-
-        const textMesh = new THREE.Mesh(geometry, [
-          new THREE.MeshPhongMaterial( { color : 0x000000 } )
-        ]);
-
-        textMesh.position.x = cylinder.position.x;
-        textMesh.position.y = cylinder.position.y;
-        textMesh.position.z = cylinder.position.z + 10;
-
-        textMesh.name = text;
-
-        texts.push(textMesh);
-        scene.add(textMesh);
+        div.innerHTML = text;
 
       });
 
