@@ -139,16 +139,15 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
       mat.set(
         1,0,0,0,
         0,0,1,0, 
-        0,-1,0,0,
+        0,1,0,0,
         0,0,0,1
       );
       orientation.multiply(mat);
 
       /* cylinder: radiusAtTop, radiusAtBottom, 
           height, radiusSegments, heightSegments */
-      const edgeGeometry = new THREE.CylinderGeometry( nextRadius, currRadius, direction.length(), 8, 1);
-      const cylinder = new THREE.Mesh( edgeGeometry, 
-              new THREE.MeshPhongMaterial( { color: color, flatShading : true } ) );
+      const edgeGeometry = new THREE.CylinderGeometry( currRadius, nextRadius, direction.length(), 8, 1);
+      const cylinder = new THREE.Mesh( edgeGeometry, new THREE.MeshPhongMaterial( { color: color, flatShading : true } ) );
 
       cylinder.applyMatrix4(orientation)
       cylinder.position.set(midPoint.x, midPoint.y, midPoint.z);
