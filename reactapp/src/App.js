@@ -48,31 +48,27 @@ class App extends React.Component {
         return <Visualise />;
         
       default:
-        const text1 = "Vytvor bool. siet";
-        const text2 = "Nahrat siet (aeon)";
-        const text3 = "Nahrat predclustrovanu siet (json)";
-
         return (
         <div>
           <div class="row height-100"></div>
           <div class="row height-200 ">
             <form onSubmit={this.handleSubmit}> 
 
-            <div class="col-lg-4 btn wrapper" value={text1} onClick={this.handleButton1} >
+            <div class="col-lg-4 btn wrapper" onClick={this.handleButton1} >
               <ServerIcon />
               <br/>
               <h3 class="wrapperh3">Go to Aeon</h3>
               <p>Redirection to AEON, where is possible to create <i>.aeon</i> file, which can be used in next steps.</p>
             </div>
 
-            <div class="col-lg-4 btn wrapper" value={text2} onClick={this.handleButton2} >
+            <div class="col-lg-4 btn wrapper" onClick={this.handleButton2} >
               <AeonFileIcon />
               <br/>
               <h3 class="wrapperh3">Import Aeon file</h3>
               <p>Import of file in <i>.aeon</i> format, which can be further processed with choosing type of Boolean network and starting state.</p>
             </div>
             
-            <div class="col-lg-4 btn wrapper" value={text3} onClick={this.handleButton3} >
+            <div class="col-lg-4 btn wrapper" onClick={this.handleButton3} >
               <JsonIcon />
               <br/>
               <h3 >Import Json file</h3>
