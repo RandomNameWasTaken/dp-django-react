@@ -261,12 +261,22 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
         }
 
         // COMPUTE NEW COORDINATES around circle
-        const theta = 2 * Math.PI / childCount * i;
+        const theta = 2 * Math.PI / childCount;
+        const h = childCount / 2;
 
-        var xPos = Math.cos(theta) * childsChildCount;
-        var zPos = Math.sin(theta) * childsChildCount;
-        // this point is not exactly matching with rotation line
-        // it is used to compute vector and later in correct newStartPoint
+        var fi = i * theta;
+        if (i <= h && i % 2 == 1) {
+          fi = (Math.ceil(h) - 1 + i) * theta;
+        } else if (i > h && (childCount - 1 - i) % 2 == 0) {
+          fi = (childCount - i) * theta;
+        } if (i > h && (childCount - 1 - i) % 2 == 1) {
+          fi = (Math.ceil(h) - 1 + childCount - i) * theta;
+        }
+
+        var polarCoor = (fi, childsChildCount);
+
+        var xPos = childsChildCount * Math.cos(fi);
+        var zPos = childsChildCount * Math.sin(fi);
         const newStartPointHelper = new Point(point.x + xPos, point.y, point.z + zPos);
 
         const vector = new THREE.Vector3(newStartPointHelper.x - prevPoint.x, newStartPointHelper.y - prevPoint.y, newStartPointHelper.z - prevPoint.z).normalize();
@@ -277,9 +287,9 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
           prevPoint.z + distance * vector.z,
         );
       
-        const branch_factor = 2 - (1/max_branching * branch_count);
-        xPos = Math.cos(theta) * childsChildCount * branch_factor; // TODO pronasobit constantov pro urceni mensiho/vetsiho uhlu - v ramci hlbky stromu? 
-        zPos = Math.sin(theta) * childsChildCount * branch_factor; // TODO
+        const branch_factor = 2 - (1/max_branching);
+        xPos = Math.cos(fi) * childsChildCount * branch_factor;
+        zPos = Math.sin(fi) * childsChildCount * branch_factor;
         const newEndPoint = new Point(newStartPoint.x + xPos, newStartPoint.y - CYLINDER_HEIGHT, newStartPoint.z + zPos);
       
         tuple = Object.freeze({ id: cluster["Desc"][i], prevPoint: newStartPoint, point: newEndPoint });
