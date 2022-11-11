@@ -205,6 +205,15 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
 
   }
 
+  function getChildsChilds(data, cluster) {
+    var childsChildCount = 0;
+    for (var i = 0; i < cluster["Desc"].length; ++i) {
+      childsChildCount += data[cluster["Desc"][i]]["NodeCount"];
+    }
+
+    return childsChildCount;
+  }
+
   // prevPoint, point - upper and downer middle points of cylinder
   // dirPoint - point to which direction of cylinder (dir vector) should go 
   function clustering(scene, data, id, max_branching, prevPointFirst, pointFirst, biggestRank) {
@@ -217,7 +226,7 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
     var tuple = Object.freeze({ id: id, prevPoint: prevPointFirst, point: pointFirst });
     var stack = [ tuple ];
  
-    var count = 0
+    var count = 0;
 
     while (stack.length > 0) {
       ++count;
@@ -229,17 +238,14 @@ export function init3Dgraphics(element, data, nodes_ids, h, w) {
       var cluster = data[current];
       const childCount = cluster["Desc"].length;
 
-      var childsChildCount = 0;
-      for (var i = 0; i < cluster["Desc"].length; ++i) {
-        childsChildCount += data[cluster["Desc"][i]]["NodeCount"];
-      }
+      var childsChildCount = getChildsChilds(data, cluster);
 
       var cylinder = createCylinder(data, current, prevPoint, point, cluster.NodeCount, childsChildCount, data[current]["Rank"], biggestRank);
 
       const prevPointPointDist = Math.sqrt((point.x - prevPoint.x) * (point.x - prevPoint.x) + (point.y - prevPoint.y)
                               * (point.y - prevPoint.y) + (point.z - prevPoint.z) * (point.z - prevPoint.z));
 
-      for (i = 0; i < childCount; ++i) {
+      for (var i = 0; i < childCount; ++i) {
 
         if (childCount === 1) {
 
