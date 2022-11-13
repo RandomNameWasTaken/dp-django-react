@@ -1,9 +1,6 @@
 from collections import deque
 from .clusterNode import *
-import multiprocessing
-from datetime import datetime
 from .clusterNode import *
-import gc
 from .process import *
 from .semantic import *
 
@@ -24,7 +21,7 @@ def get_name(number, nodes):
 
     return res
 
-def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, semantics):
+def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
     anc_function = get_ancestor_function(semantics)
     child_function = get_generate_function(semantics)
 
@@ -36,7 +33,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
         (curr_node, children_comp) = stack[-1]
         curr_cluster = node_info[curr_node]['cluster']
 
-        children = child_function(curr_node, number_of_nodes, nodes, regulations, updates, node_info) if children_comp == None else children_comp
+        children = child_function(curr_node, number_of_nodes, nodes, updates, node_info) if children_comp == None else children_comp
         stack[-1] = (curr_node, children)
         for child in children:
 
@@ -63,7 +60,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
         # Ak je node "black" 
         if node_check == curr_node:
 
-            ancestors = anc_function(curr_node, number_of_nodes, nodes, regulations, updates, node_info)
+            ancestors = anc_function(curr_node, number_of_nodes, nodes, updates, node_info)
             ancestor_by_ranks = {} # To cluster ancestors with same rank
             for ancestor_key in ancestors:
                 if ancestor_key not in node_info:
@@ -117,21 +114,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, regulations, updates, s
     return clusters
 
 
-# Cluster by groofe ham algo
-#def clustering (data, ancestors, node, cluster, number_of_nodes, clusters):
-    
-
-def print_cluster_nodes(cluster_node, n):
-    print(n)
-    print('nodes: ')
-    print(cluster_node.nodes)
-
-    for i in cluster_node.desc:
-        n = print_cluster_nodes(i, n + 1)
-
-    return n
-
-def rank_by_path(root, rank, number_of_nodes, nodes, regulations, updates, semantics):
+def rank_by_path(root, rank, number_of_nodes, nodes, updates, semantics):
 
     generate_fun = get_generate_function(semantics)
 
@@ -142,7 +125,7 @@ def rank_by_path(root, rank, number_of_nodes, nodes, regulations, updates, seman
     while queue:
         node = queue.popleft()
 
-        children = generate_fun(node, number_of_nodes, nodes, regulations, updates) 
+        children = generate_fun(node, number_of_nodes, nodes, updates) 
         for child in children:
             if child not in ranks:
                 ranks[child] = { 'rank' : ranks[node]['rank'] + 1, 'back' : set() }
@@ -151,41 +134,7 @@ def rank_by_path(root, rank, number_of_nodes, nodes, regulations, updates, seman
 
     return ranks
 
-def cluster(root, number_of_nodes, nodes, regulations, updates, semantics):
-    ranks = rank_by_path(root, 0, number_of_nodes, nodes, regulations, updates, semantics)
-    clusters = clustering_(root, number_of_nodes, ranks, nodes, regulations, updates, semantics)
+def cluster(root, number_of_nodes, nodes, updates, semantics):
+    ranks = rank_by_path(root, 0, number_of_nodes, nodes, updates, semantics)
+    clusters = clustering_(root, number_of_nodes, ranks, nodes, updates, semantics)
     return clusters
-
-"""
-    if root == '':
-        states = list(state_space.keys())
-        states.sort(key=(lambda x : len(ancestors[x])))
-
-        root_clusters = []
-        root_states = []
-        clusters = set()
-        for i in states:
-
-            if 'cluster' not in state_space[i]:
-
-                rank_by_path(i, 0, number_of_nodes, nodes, regulations, updates, semantics)
-
-                clusters.add(ClusterNode(state_space[i]['rank']))
-                root_states.append(i)
-
-                clustering(state_space, ancestors, i, clusters[len(clusters) - 1], number_of_nodes, clusters)
-
-     #           delete_rank(state_space)
-
-        for s in root_states:
-            if s in ancestors:
-                if len(ancestors[s]) > 0:
-                    for anc in ancestors[s]:
-                        state_space[anc]['cluster'].desc.add(state_space[s]['cluster'])
-
-        return (state_space, clusters)
-
-    # ----------------------------------------------------------- ROOT
-"""
-
-

@@ -74,7 +74,6 @@ def parse(Lines):
     r_update_catch = re.compile('^\s*\$(?P<node>\w+)\s*:\s*(?P<rules>.+)\s*$')
     r_regul = re.compile('^\s*(?P<regulator>\w+)\s*-(?P<kind>>|\|)\s*(?P<node>\w+)')
     r_param = re.compile('.*(?P<parametrization>(\w|_)+\(.+\))')
-    r_begin_of_param = re.compile('(\w|_)+\(')
     r_param_inside = re.compile('.*\((.*)\)')
 
     updates = {}
@@ -126,12 +125,6 @@ def parse(Lines):
                 regulations[nodes[node]][nodes[regulator]] = '+'
             else :
                 regulations[nodes[node]][nodes[regulator]] = '-'
-
-   # print(nodes)
-   # print('REGULATIONS')
-   # print(regulations)
-   # print('UPDATES')
-   # print(updates)
 
     return (nodes, regulations, updates, parametrizations)
 

@@ -1,15 +1,5 @@
-import sys
-import itertools 
-import re
-import gc
-import time
-
 from .expression import *
 from .helpers import *
-
-def get_neg_function(regulations, node, regulator):
-    return (lambda x : not(x)) if regulations[node][regulator] == '-' else lambda x : x
-
 
 def create_nodes_of_state_space(number_of_nodes):
     # CREATE NODES OF STATE SPACE
@@ -20,7 +10,7 @@ def create_nodes_of_state_space(number_of_nodes):
     return state_space_ids
 
 
-def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, regulations, updates, node_info):
+def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, updates, node_info):
     curr_state = get_name(state_id, number_of_nodes)
 
     ancestors = []
@@ -29,7 +19,7 @@ def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, regulations, u
 
         pot_ancestor = pot_ancestor[:idx] + ('0' if i == '1' else '1') + pot_ancestor[idx + 1:]
 
-        new_val = updates[idx].eval(pot_ancestor, None) # None for parametrization
+        new_val = updates[idx].eval(pot_ancestor) # None for parametrization
         new_state = pot_ancestor[:idx] + str(int(new_val)) + pot_ancestor[idx + 1:]
        
         if new_state == curr_state:
@@ -39,28 +29,24 @@ def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, regulations, u
     return frozenset(ancestors)
 
             
-def get_ancestors_of_node_sync(state_id, number_of_nodes, nodes, regulations, updates, node_info):
+def get_ancestors_of_node_sync(state_id, number_of_nodes, nodes, updates, node_info):
     if 'anc' not in node_info[state_id]:
         return {}
 
     return frozenset(node_info[state_id]['anc'])
 
 
-def generate_connection_for_node_async(state_id, number_of_nodes, nodes, regulations, updates, node_info = {}):
+def generate_connection_for_node_async(state_id, number_of_nodes, nodes, updates, node_info = {}):
 
     connections = set()
     curr_state = get_name(state_id, number_of_nodes)
-    old_state = get_name(state_id, number_of_nodes)
 
-    params = {}
-    functions_opt = {}
     children = {}
     for node in nodes:
         node_indx = nodes[node]
-        indx_of_node_in_state = node_indx  # this value is going to be changed
 
-        new_val = updates[node_indx].eval(curr_state, None) # None for parametrization
-        state_to_connect = curr_state[:indx_of_node_in_state] + str(int(new_val)) + curr_state[indx_of_node_in_state + 1:]
+        new_val = updates[node_indx].eval(curr_state) # None for parametrization
+        state_to_connect = curr_state[:node_indx] + str(int(new_val)) + curr_state[node_indx + 1:]
 
         if state_to_connect == curr_state:
             continue
@@ -74,7 +60,7 @@ def generate_connection_for_node_async(state_id, number_of_nodes, nodes, regulat
     return children
 
 
-def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, regulations, updates, node_info = {}):
+def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, updates, node_info = {}):
     connections = set()
     state_to_connect = get_name(state_id, number_of_nodes)
     old_state = get_name(state_id, number_of_nodes)
@@ -84,7 +70,7 @@ def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, regulati
         update = nodes[node]
         indx_of_node_in_state = update  # this value is going to be changed
 
-        new_val = updates[update].eval(old_state, None) # None for parametrization
+        new_val = updates[update].eval(old_state) # None for parametrization
         state_to_connect = state_to_connect[:indx_of_node_in_state] + str(int(new_val)) + state_to_connect[indx_of_node_in_state + 1:]
 
     state_to_connect_id = get_id(state_to_connect)
@@ -100,12 +86,4 @@ def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, regulati
     children = frozenset(connections)
 
     return children
-
-
-def generate_functions_for_len(functions_opt, length):
-    if length in functions_opt:
-        return
-    # 1 is &, 0 is |
-    result = create_nodes_of_state_space(length)
-    functions_opt[length] = [get_name(i, length) for i in result]
 

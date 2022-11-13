@@ -23,7 +23,6 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
 
     if params is None:
         nodes = result["nodes"]
-        regulations = result["regulations"]
         updates = result["updates"]
 
         state = []
@@ -50,7 +49,7 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
             if semantic == 'sync':
                 semantics = Semantics.SYNC
 
-            clusters = cluster(state, number_of_nodes, nodes, regulations, updates, semantics)
+            clusters = cluster(state, number_of_nodes, nodes, updates, semantics)
 
             cluster_coloring(clusters)
 
@@ -70,9 +69,14 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
             for i in nodes:
                 state.append(0)
             
-            for input_key in nodes_chosen:
-                index = nodes[input_key]
-                state[index] = 1
+            print(nodes_chosen)
+            if nodes_chosen != ['']: # [''] == no nodes choose
+                for input_key in nodes_chosen:
+                    if input_key is None:
+                        continue
+                    print(input_key)
+                    index = result["nodes"][input_key]
+                    state[index] = 1
 
             state = [str(i) for i in state]
             state = ''.join(state)
@@ -90,7 +94,7 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
                 if semantic == 'sync':
                     semantics = Semantics.SYNC
 
-                clusters = cluster(state, number_of_nodes, nodes, regulations, updates, semantics)
+                clusters = cluster(state, number_of_nodes, nodes, updates, semantics)
 
                 result_clusters[param][semantic] = clusters
 
