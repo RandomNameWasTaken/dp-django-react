@@ -84,6 +84,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
 
     controls.update();
     renderer.render(scene, camera);
+    pointLight.position.copy(camera.position );
   }
 
   renderer.setAnimationLoop(animate);
