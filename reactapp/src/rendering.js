@@ -251,17 +251,24 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         const newStartPointHelper = new Point(point.x + xPos, point.y, point.z + zPos);
 
         const vector = new THREE.Vector3(newStartPointHelper.x - prevPoint.x, newStartPointHelper.y - prevPoint.y, newStartPointHelper.z - prevPoint.z).normalize();
-        const distance = Math.sqrt(cluster.NodeCount * cluster.NodeCount + prevPointPointDist * prevPointPointDist);
+
+        const distance = Math.sqrt(cluster.NodeCount * cluster.NodeCount + CYLINDER_HEIGHT * CYLINDER_HEIGHT);
         newStartPoint = new Point(
           prevPoint.x + distance * vector.x,
           prevPoint.y + distance * vector.y,
           prevPoint.z + distance * vector.z,
         );
+
+        const newEndPoint = new Point(
+          newStartPoint.x + distance * vector.x,
+          newStartPoint.y + distance * vector.y,
+          newStartPoint.z + distance * vector.z,
+        );
       
-        const branch_factor = 2 - (1/max_branching);
-        xPos = Math.cos(fi) * childsChildCount * branch_factor;
-        zPos = Math.sin(fi) * childsChildCount * branch_factor;
-        const newEndPoint = new Point(newStartPoint.x + xPos, newStartPoint.y - CYLINDER_HEIGHT, newStartPoint.z + zPos);
+       // const branch_factor = 2 - (1/max_branching);
+       // xPos = Math.cos(fi) * childsChildCount * branch_factor;
+       // zPos = Math.sin(fi) * childsChildCount * branch_factor;
+      //  const newEndPoint = new Point(newStartPoint.x + xPos, newStartPoint.y - CYLINDER_HEIGHT, newStartPoint.z + zPos);
       
         tuple = Object.freeze({ id: cluster["Desc"][i], prevPoint: newStartPoint, point: newEndPoint });
         stack.push(tuple);
