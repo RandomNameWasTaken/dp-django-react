@@ -24,7 +24,7 @@ export default class Visualise extends React.Component {
         var startStateId = null;
 
         for (var key in data[param][sem]) {
-            if (data[param][sem][key]['Rank'] === 0 && startStateId === null) {
+            if (data[param][sem][key]['Rank'] === 0) {
                 const splitted = key.split('_');
                 startStateId = splitted[1];
                 break;
