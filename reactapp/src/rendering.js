@@ -250,9 +250,9 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         );
 
         const newEndPoint = new Point(
-          newStartPoint.x + distance * vector.x,
-          newStartPoint.y + distance * vector.y,
-          newStartPoint.z + distance * vector.z,
+          newStartPoint.x + CYLINDER_HEIGHT * vector.x,
+          newStartPoint.y + CYLINDER_HEIGHT * vector.y,
+          newStartPoint.z + CYLINDER_HEIGHT * vector.z,
         );
       
        // const branch_factor = 2 - (1/max_branching);
