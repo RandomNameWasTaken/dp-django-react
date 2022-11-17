@@ -3,18 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { Point } from './Point';
 import { Interaction } from 'three.interaction-fixed';
+import { dec2bin  } from "./utils";
 
-function dec2bin(dec, n) {
-  var res = (dec >>> 0).toString(2);
-
-  if (res.length < n) {
-    for (let i = 0; i < (n - res.length); ++i) {
-      res = '0' + res;
-    }
-  }
-
-  return res;
-}
 
 export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
 
