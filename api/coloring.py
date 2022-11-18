@@ -67,7 +67,7 @@ def compSCCcolor (cluster):
     if isOscillation(scc):
       color = '"hsla(100, 90%, 50%, 0.53)"'
     
-    if isStability(scc):
+    if isStability(scc) and len(cluster["Backs"]) == 0:
       color = '"hsla(295, 90%, 50%, 0.37)"'
 
     for cl in scc:
