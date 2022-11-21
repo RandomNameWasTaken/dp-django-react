@@ -32,6 +32,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
 
 // For showing text information about clusters
   var texts = [];
+  var cylinders = [];
 
   //const axesHelper = new THREE.AxesHelper(100);
   //scene.add(axesHelper);
@@ -97,6 +98,15 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
     */
   }
 
+  function resetOpacity() {
+    cylinders.forEach(function (cylinder) {
+      const newMaterial = cylinder.material.clone();
+      newMaterial.transparent = false;
+      newMaterial.opacity = 1;
+      cylinder.material = newMaterial;
+    });
+  }
+
   function createCylinder( data, id, startPoint, endPoint, currRadius, nextRadius, rank, rank_max) {
     const color = new THREE.Color( data[id]['Color'] === '' ? calcColor(rank_max, rank) : data[id]['Color'] );
     //color.setHex(rank/10 * 0xffffff );
@@ -132,6 +142,12 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
       cylinder.position.set(midPoint.x, midPoint.y, midPoint.z);
       cylinder.cursor = 'pointer';
       cylinder.on('click', function(ev) {
+
+        resetOpacity();
+        const newMaterial = cylinder.material.clone();
+        newMaterial.transparent = true;
+        newMaterial.opacity = 0.5;
+        cylinder.material = newMaterial;
 
         texts.forEach(function (text) {
             var selectedObject = scene.getObjectByName(text.name);
@@ -254,18 +270,29 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
           newStartPoint.y + CYLINDER_HEIGHT * vector.y,
           newStartPoint.z + CYLINDER_HEIGHT * vector.z,
         );
-      
+
+    //    const newVector = [newEndPoint.x - newStartPoint.xnewEndPoint.y - newStartPoint.y, newEndPoint.z - newStartPoint.z];
+        console.log( [ [Math.cos(angle), 0, Math.sin(angle)], [0, 1, 0], [-Math.sin(angle), 0, Math.cos(angle)] ] );
+        const matrix =[ [Math.cos(angle), 0, Math.sin(angle)], [0, 1, 0], [-Math.sin(angle), 0, Math.cos(angle)] ];
+
+        const c = Math.cos(angle);
+        const s = Math.sin(angle);
+        const transStartPoint = new Point(c*newStartPoint.x + s*newStartPoint.x, newStartPoint.y, -s*newStartPoint.x + c*newStartPoint.z);
+        const transEndPoint = new Point(c*newEndPoint.x + s*newEndPoint.x, newEndPoint.y, -s*newEndPoint.x + c*newEndPoint.z);
        // const branch_factor = 2 - (1/max_branching);
        // xPos = Math.cos(fi) * childsChildCount * branch_factor;
        // zPos = Math.sin(fi) * childsChildCount * branch_factor;
       //  const newEndPoint = new Point(newStartPoint.x + xPos, newStartPoint.y - CYLINDER_HEIGHT, newStartPoint.z + zPos);
       
-        tuple = Object.freeze({ id: cluster["Desc"][i], prevPoint: newStartPoint, point: newEndPoint });
+        tuple = Object.freeze({ id: cluster["Desc"][i], prevPoint: transStartPoint, point: transEndPoint });
         stack.push(tuple);
       }
 
       if (cylinder !== undefined) {
-        scene.add(cylinder);
+        cylinders.push(cylinder);
+       // if (current === firstId) {
+          scene.add(cylinder);
+       // }
       }
 
     }
