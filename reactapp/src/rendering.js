@@ -13,6 +13,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
   }
 
   const CYLINDER_HEIGHT = 5;
+  const number_of_nodes = Object.keys(nodes_ids).length;
 
   const scene = new THREE.Scene();
   //scene.background = new THREE.Color( 0xd3d3d3 );
@@ -160,7 +161,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
             text += ',';
           }
           text += ' (';
-          const bin = dec2bin(elem, nodes_ids.length);
+          const bin = dec2bin(elem, number_of_nodes);
 
           for (let i = 0; i < bin.length; i++) {
             if (bin[i] === '1') {

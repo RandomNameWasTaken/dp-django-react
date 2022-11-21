@@ -31,7 +31,8 @@ export default class Visualise extends React.Component {
             }
         }
 
-        const startStateBin = dec2bin(startStateId, Object.keys(nodes).length);
+        const number_of_nodes = Object.keys(nodes).length;
+        const startStateBin = dec2bin(startStateId, number_of_nodes);
         var startState = '';
         for (var i = 0; i < startStateBin.length; i++) {
             if (startStateBin[i] === '1') {
