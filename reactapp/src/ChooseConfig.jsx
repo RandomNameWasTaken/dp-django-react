@@ -161,6 +161,18 @@ class ChooseConfig extends React.Component {
       return <LoadAeon />
     }
 
+    if (this.state.error) {
+      return   <div class="row">
+                <div class="col-4-lg btn wrapper"></div>
+                <div class="col-4-lg btn wrapper">
+                    <ExclaimIcon />
+                    <h3 class="wrapperh3">Error</h3>
+                    <p>Please check your input file and try again.</p>
+                </div>
+                <div class="col-4-lg btn wrapper"></div>
+              </div>
+    }
+
     if (this.state.value === StateApp.Visualise) {
 
           // Ask to save data
@@ -204,6 +216,10 @@ class ChooseConfig extends React.Component {
         axios
             .get("http://127.0.0.1:8000/get_nodes", { params: data_params })
             .then(response => {
+                if (response.data === "" || !response.data) {
+                  this.setState({ error : true });
+                  return;
+                }
                 const result = JSON.parse(response.data);
                 this.setState({ nodes : result["nodes"] });
 
@@ -213,7 +229,14 @@ class ChooseConfig extends React.Component {
 
             });
         return (
-            <h3>Getting nodes</h3>
+              <div class="row">
+                <div class="col-4-lg btn wrapper"></div>
+                <div class="col-4-lg btn wrapper">
+                    <CoffeeIcon />
+                    <h3 class="wrapperh3">Loading nodes</h3>
+                </div>
+                <div class="col-4-lg btn wrapper"></div>
+              </div>
         );
     }
 
@@ -383,8 +406,13 @@ class ChooseConfig extends React.Component {
         axios
             .get("http://127.0.0.1:8000/get_data/", { params: data_params })
             .then(response => {
-                this.setState({ clusters : response.data });
-                this.setState({ value : StateApp.Visualise });
+              if (response.data === "" || !response.data) {
+                this.setState({ error : true });
+                return;
+              }
+              
+              this.setState({ clusters : response.data });
+              this.setState({ value : StateApp.Visualise });
             });
 
         return (

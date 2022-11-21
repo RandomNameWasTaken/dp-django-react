@@ -9,7 +9,6 @@ import json
 def getData(request):
 
     aeon_text = request.query_params.get('file_data').split(' %%')
-    print(aeon_text)
 
     semantics = request.query_params.get('semantics').split(',')
     nodes_text = request.query_params.get('nodes')
@@ -27,16 +26,21 @@ def getData(request):
         params = json.loads(params)
         clusters_json = compute_clusters(aeon_text, nodes, semantics, params, None)
 
+    if clusters_json is None:
+        return Response()
+
     return Response(clusters_json)
 
 
 @api_view(['GET'])
 def getNodes(request):
     aeon_text = request.query_params.get('file_data').split(' %%')
-    print(aeon_text)
-
 
     result = get_nodes(aeon_text)
+
+    if result is None:
+        return Response()
+
     del result["updates"]
 
     if result["parametrization"] != {} :
