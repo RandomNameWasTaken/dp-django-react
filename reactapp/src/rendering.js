@@ -171,7 +171,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
           text += ')';
         });
 
-        div.innerHTML = text;
+        div.innerHTML =  "<b>Rank</b>: " + data[id]["Rank"] + "<br><b>Nodes</b>: " + text;
 
       });
 
