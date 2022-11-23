@@ -136,7 +136,9 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
 
       /* cylinder: radiusAtTop, radiusAtBottom, 
           height, radiusSegments, heightSegments */
-      const edgeGeometry = new THREE.CylinderGeometry( currRadius, nextRadius, direction.length(), 8, 1);
+      const RADIAL_SEGMENTS = 8;
+      const HEIGHT_SEGMENTS = 1;
+      const edgeGeometry = new THREE.CylinderGeometry( currRadius, nextRadius, CYLINDER_HEIGHT, Math.max(RADIAL_SEGMENTS, nextRadius * RADIAL_SEGMENTS), HEIGHT_SEGMENTS);
       const cylinder = new THREE.Mesh( edgeGeometry, new THREE.MeshPhongMaterial( { color: color, flatShading : true } ) );
 
       cylinder.applyMatrix4(orientation)
