@@ -90,7 +90,7 @@ def order_descendants(desc):
 
     if len(desc) <= 2:
         return (desc, None)
-
+    return (desc, None)
 
     sorted_sizes = map((lambda x: len(x.nodes)), desc)
     med = statistics.median(sorted_sizes)
