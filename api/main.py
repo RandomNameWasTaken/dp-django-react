@@ -31,14 +31,13 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
 
             state = []
             for i in result["nodes"]:
-                state.append(0)
+                state.append('0')
             
             if nodes_chosen != ['']: # [''] == no nodes choose
                 for input_key in nodes_chosen:
                     index = result["nodes"][input_key]
-                    state[index] = 1
+                    state[index] = '1'
 
-            state = [str(i) for i in state]
             state = ''.join(state)
             state = int(state, 2)
 
@@ -62,25 +61,22 @@ def compute_clusters(file_data, nodes_chosen, semantics_arr, params, result):
             params = { 0 : []}
         else:
             for param in params:
-
                 f_data = file_data
                 for line in params[param]:
                     f_data.append(line)
 
-                (nodes, regulations, updates, _) = read(file_data)
+                (nodes, regulations, updates, _) = read(f_data)
 
                 state = []
                 for i in nodes:
-                    state.append(0)
+                    state.append('0')
                 
                 if nodes_chosen != ['']: # [''] == no nodes choose
                     for input_key in nodes_chosen:
-                        if input_key is None:
-                            continue
-                        index = result["nodes"][input_key]
-                        state[index] = 1
+                        print(input_key)
+                        index = nodes[input_key]
+                        state[index] = '1'
 
-                state = [str(i) for i in state]
                 state = ''.join(state)
                 state = int(state, 2)
 
