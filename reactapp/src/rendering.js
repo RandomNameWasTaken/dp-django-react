@@ -171,7 +171,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         currRadius,
         nextRadius,
         CYLINDER_HEIGHT,
-        Math.max(100, nextRadius * RADIAL_SEGMENTS),
+        RADIAL_SEGMENTS,
         HEIGHT_SEGMENTS
       );
 
