@@ -295,7 +295,9 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
     });
     var stack = [tuple];
 
-    const yaxis = new Point(0, 1, 0);
+  // to change direction of descendant for situations when cluster has "Separate" and only 1 other descendant
+  // according this the position is swiped from left to right - alternating
+    var last_dir_right = false;
 
     while (stack.length > 0) {
       const stackElement = stack.pop();
@@ -342,7 +344,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
 
       for (var i = 0; i < childCount; ++i) {
 
-        if (childCount === 1) {
+        if (childCount === 1 && cluster["Separate"] === undefined) {
           stack.push( createCoordinatesForSingleSon(point, prevPoint, cluster["Desc"][0]) );
           continue;
         }
@@ -352,11 +354,16 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         const adota = uVector.dot(uVector);
         const crossProductVec = crossProduct(dirVector, uVector);
         const vVector = crossProductVec.divideScalar(adota).normalize();
-        dirVector.normalize();
-
 
         // COMPUTE NEW COORDINATES around circle
-        const theta = (2*Math.PI / childCount) * i;
+        var theta = (2*Math.PI / childCount) * i;
+        if (childCount === 1) {
+          if (last_dir_right === true) {
+            theta = Math.PI; // not 0 but 180
+          }
+          last_dir_right = !last_dir_right;
+        }
+
         const sin = Math.sin(theta);
         const cos = Math.cos(theta);
 

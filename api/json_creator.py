@@ -89,9 +89,22 @@ def create_json_to_cluster(clusters):
 
 def order_descendants(desc):
     desc = list(desc)
+    desc_count = len(desc)
 
-    if len(desc) <= 2:
+    if desc_count <= 1:
         return (desc, None)
+
+    if desc_count == 2:
+        fst_count = len(desc[0].nodes)
+        snd_count = len(desc[1].nodes)
+
+        if fst_count == snd_count:
+            return (desc, None)
+
+        if fst_count < snd_count:
+            return ([desc[0]], desc[1])
+
+        return ([desc[1]], desc[0])
 
     sorted_sizes = map((lambda x: len(x.nodes)), desc)
     med = statistics.median(sorted_sizes)
@@ -122,7 +135,6 @@ def order_descendants(desc):
     last_index = math.ceil(desc_count / 2) - 1
 
     for i in range(0, math.ceil(desc_count / 2)):
-        print(i)
         res_desc.append(from_smallest[i])
 
         if is_odd and i == last_index:
