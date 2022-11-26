@@ -157,7 +157,7 @@ export default class Visualise extends React.Component {
                         const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
                         const can_div = React.createElement('div', { id : "div" + index } );
 
-                        const cl = Object.keys(fileData[key]).length === 3 ? "col-11" : "col-5";
+                        const cl = Object.keys(fileData[key]).length === 3 && Object.keys(fileData) === 1 ? "col-11" : "col-5";
                         canvases.push(React.createElement('div', { class: cl }, [can_div, canvas]));
 
                         const quotient = Math.floor(index/2);
