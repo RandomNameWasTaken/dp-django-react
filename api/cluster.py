@@ -33,13 +33,15 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
         (curr_node, children_comp) = stack[-1]
         curr_cluster = node_info[curr_node]['cluster']
 
-        children = child_function(curr_node, number_of_nodes, nodes, updates, node_info) if children_comp == None else children_comp
+        children = child_function(curr_node, number_of_nodes, nodes, updates, node_info) if children_comp is None else children_comp
         stack[-1] = (curr_node, children)
         for child in children:
 
+            if node_info[child]['rank'] < node_info[curr_node]['rank']:
+                node_info[curr_node]['back'].add(child)
+                continue
+
             if 'cluster' in node_info[child]:
-                if node_info[child]['rank'] < node_info[curr_node]['rank']:
-                    node_info[curr_node]['back'].add(child)
                 continue
 
             if node_info[curr_node]['rank'] == node_info[child]['rank']:
@@ -103,11 +105,12 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
     for node in node_info:
         if 'cluster' not in node_info[node]:
             print("Node without cluster: " + str(node))
-            continue # TODO divne toto by malo byt spocitane?
+            continue
 
         cluster = node_info[node]['cluster']
         for backs in node_info[node]['back']:
-            cluster.backs.add(node_info[backs]['cluster'])
+            if 'cluster' in node_info[backs]:
+                cluster.backs.add(node_info[backs]['cluster'])
         
         clusters.add(cluster)
 
