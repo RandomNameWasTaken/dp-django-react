@@ -92,8 +92,12 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
     renderer.setSize(canvas.width, canvas.width);
   });
 
-  function calcColor(max, val) {
-    return "hsla(147, 0%, 50%, 1)";
+  function calcColor(max, val, cluster) {
+    if (cluster["Backs"].length > 0) {
+      return "hsla(259, 20%, 30%, 1)";
+    }
+
+    return "hsla(255, 0%, 46%, 1)";
     /*
     const min = 0
     var minHue = 240, maxHue=0;
@@ -132,7 +136,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
   ) {
     console.log(id);
     const color = new THREE.Color(
-      data[id]["Color"] === "" ? calcColor(rank_max, rank) : data[id]["Color"]
+      data[id]["Color"] === "" ? calcColor(rank_max, rank, data[id]) : data[id]["Color"]
     );
     //color.setHex(rank/10 * 0xffffff );
     // color.setHex(rank/10 * 0xffffff );
