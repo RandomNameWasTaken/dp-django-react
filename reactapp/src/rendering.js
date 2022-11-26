@@ -50,7 +50,7 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
     wireframe: false,
   };
 */
-  const pointLight = new THREE.PointLight(0xffffff);
+  const pointLight = new THREE.PointLight(0x818085);
   pointLight.position.set(20, 20, 20);
 
   const ambientLight = new THREE.AmbientLight(0xffffff);
