@@ -5,6 +5,8 @@ import { Point, createPoint } from "./Point";
 import { Interaction } from "three.interaction-fixed";
 import { dec2bin, rad2degrees } from "./utils";
 
+
+
 export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
   if (data === undefined) {
     return false;
@@ -168,9 +170,11 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         Math.max(100, nextRadius * RADIAL_SEGMENTS),
         HEIGHT_SEGMENTS
       );
+
+      const material = new THREE.MeshPhongMaterial({ color: color, flatShading: true });
       const cylinder = new THREE.Mesh(
         edgeGeometry,
-        new THREE.MeshPhongMaterial({ color: color, flatShading: true })
+        material
       );
 
       cylinder.applyMatrix4(orientation);
@@ -232,7 +236,39 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
       childsChildCount += data[cluster["Desc"][i]].NodeCount;
     }
 
+    if (cluster["Separate"] !== undefined) {
+      childsChildCount = data[cluster["Separate"]].NodeCount;
+    }
+
     return childsChildCount;
+  }
+
+  function createLine(p1, p2, color) {
+    const material = new THREE.LineBasicMaterial( { color: color } );
+    const geometry = new THREE.BufferGeometry().setFromPoints( [p1, p2] );
+    const line = new THREE.Line( geometry, material );
+    scene.add( line );
+  }
+
+  function createCoordinatesForSingleSon(point, prevPoint, id) {
+    const dirVector = new THREE.Vector3(
+      point.x - prevPoint.x,
+      point.y - prevPoint.y,
+      point.z - prevPoint.z
+    );
+
+    var newStartPoint = new Point(point.x, point.y, point.z); // to make copy
+    const newPoint = new Point(
+      dirVector.x + point.x,
+      dirVector.y + point.y,
+      dirVector.z + point.z
+    );
+
+    return Object.freeze({
+      id: id, //cluster["Desc"][0],
+      prevPoint: newStartPoint,
+      point: newPoint,
+    });
   }
 
   // prevPoint, point - upper and downer middle points of cylinder
@@ -270,13 +306,15 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
       var cluster = data[current];
       const childCount = cluster["Desc"].length;
 
+      console.log(current);
+
       var childsChildCount = getChildsChilds(data, cluster);
 
       const upperRadius = cluster.NodeCount;
       const lowerRadius =
         childCount === 1
           ? childsChildCount
-          : childsChildCount + cluster["Desc"].length;
+          : childsChildCount + cluster["Desc"].length + (cluster["Separate"] !== undefined ? 1 : 0);
 
       var cylinder = createCylinder(
         data,
@@ -289,9 +327,8 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         biggestRank
       );
 
-      const xVector = new THREE.Vector3(1, 0, 0);
-      const yVector = new THREE.Vector3(0, 1, 0);
-      const zVector = new THREE.Vector3(0, 0, 1);
+      cylinders.push(cylinder);
+      scene.add(cylinder);
 
       var dirVector = new THREE.Vector3(
         point.x - prevPoint.x,
@@ -299,29 +336,14 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         point.z - prevPoint.z
       );
 
+      if (cluster["Separate"] !== undefined) {
+          stack.push( createCoordinatesForSingleSon(point, prevPoint, cluster["Separate"]) );
+      }
 
       for (var i = 0; i < childCount; ++i) {
+
         if (childCount === 1) {
-          dirVector = new THREE.Vector3(
-            point.x - prevPoint.x,
-            point.y - prevPoint.y,
-            point.z - prevPoint.z
-          );
-
-          var newStartPoint = new Point(point.x, point.y, point.z); // to make copy
-          const newPoint = new Point(
-            dirVector.x + point.x,
-            dirVector.y + point.y,
-            dirVector.z + point.z
-          );
-
-          tuple = Object.freeze({
-            id: cluster["Desc"][0],
-            prevPoint: newStartPoint,
-            point: newPoint,
-          });
-          stack.push(tuple);
-
+          stack.push( createCoordinatesForSingleSon(point, prevPoint, cluster["Desc"][0]) );
           continue;
         }
 
@@ -333,30 +355,25 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
         dirVector.normalize();
 
 
-        // COMPUTE NEW COORDINATES around circle - not rotated circle
+        // COMPUTE NEW COORDINATES around circle
         const theta = (2*Math.PI / childCount) * i;
         const sin = Math.sin(theta);
         const cos = Math.cos(theta);
 
-
-        const u = uVector.multiplyScalar(Math.cos((2*Math.PI / childCount) * i) * lowerRadius);
-
-        const v = vVector.multiplyScalar(Math.sin((2*Math.PI / childCount) * i) * lowerRadius);
+        const u = uVector.multiplyScalar(cos * lowerRadius);
+        const v = vVector.multiplyScalar(sin * lowerRadius);
 
         var newStartPointHelper = u
           .add(v)
           .add(new THREE.Vector3(point.x, point.y, point.z));
 
 
+        // Vector which will be prolonged from prevPoint to newStartPointer -> to create newEndPoint
         const vector = new THREE.Vector3(
           newStartPointHelper.x - prevPoint.x,
           newStartPointHelper.y - prevPoint.y,
           newStartPointHelper.z - prevPoint.z
         ).normalize();
-
-        const distance = Math.floor(
-          Math.sqrt(Math.pow(lowerRadius, 2) + Math.pow(CYLINDER_HEIGHT, 2))
-        );
 
         const newEndPoint = new Point(
           newStartPointHelper.x + CYLINDER_HEIGHT * vector.x,
@@ -370,13 +387,6 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
           point: newEndPoint,
         });
         stack.push(tuple);
-      }
-
-      if (cylinder !== undefined) {
-        cylinders.push(cylinder);
-        // if (current === firstId) {
-        scene.add(cylinder);
-        // }
       }
     }
   }

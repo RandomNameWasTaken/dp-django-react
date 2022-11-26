@@ -1,5 +1,7 @@
 import json as json_dumper
+import math
 import statistics
+from copy import deepcopy
 
 def create_json(result, params, nodes):
     json = ''
@@ -60,11 +62,11 @@ def create_json_to_cluster(clusters):
         if json != '':
             json += ",\n"
 
-        (descendants, index_of_separate_element) = order_descendants(cl.desc)
+        (descendants, separate_element) = order_descendants(cl.desc)
 
-        index_str = ""
-        if index_of_separate_element is not None:
-            index_str =  ', "Index" : ' + str(index_of_separate_element)
+        sep_str = ""
+        if separate_element is not None:
+            sep_str =  ', "Separate" : "' + separate_element.get_name() + '"'
 
         json += """
     """ + '"' + cl.get_name() + '"' + """:
@@ -74,7 +76,7 @@ def create_json_to_cluster(clusters):
                 "Color": """ + cl.color + """,
                 "Nodes": [ """ + ', '.join([ str(node) for node in cl.nodes ]) + """ ],
                 "Desc": [ """ + ', '.join([ '"' + desc.get_name() + '"' for desc in descendants ])  + """ ],
-                "Backs": [ """ + ', '.join([ '"' + back.get_name() + '"' for back in cl.backs ]) + """ ] """ + index_str + """
+                "Backs": [ """ + ', '.join([ '"' + back.get_name() + '"' for back in cl.backs ]) + """ ] """ + sep_str + """
             }"""
 
     json = """
@@ -90,7 +92,6 @@ def order_descendants(desc):
 
     if len(desc) <= 2:
         return (desc, None)
-    return (desc, None)
 
     sorted_sizes = map((lambda x: len(x.nodes)), desc)
     med = statistics.median(sorted_sizes)
@@ -102,13 +103,32 @@ def order_descendants(desc):
         new_desc.append(desc[d[0]])
 
     # Choosing biggest/smallest element which could be placed in the centre - only if it is bigger/smaller than others
-    put_one_separately = None
+    separate_one = None
     last_index = len(distances) - 1
     if distances[last_index][1] > distances[last_index - 1][1]:
-        put_one_separately = last_index
+        separate_one = new_desc.pop()
 
     if distances[0][1] > distances[1][1]:
-        put_one_separately = 0
+        separate_one = new_desc.pop(0)
 
-    return (new_desc, put_one_separately)
+
+    from_smallest = sorted([i for i in new_desc], key=(lambda t: len(t.nodes)))
+    from_biggest = deepcopy(from_smallest)
+    from_biggest.reverse()
+
+    res_desc = []
+    desc_count = len(from_smallest)
+    is_odd = desc_count % 2 == 1
+    last_index = math.ceil(desc_count / 2) - 1
+
+    for i in range(0, math.ceil(desc_count / 2)):
+        print(i)
+        res_desc.append(from_smallest[i])
+
+        if is_odd and i == last_index:
+            break
+
+        res_desc.append(from_biggest[i])
+
+    return (res_desc, separate_one)
 
