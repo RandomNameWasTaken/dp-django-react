@@ -10,10 +10,8 @@ export function dec2bin(dec, n) {
   dec = Number(dec);
   var res = dec.toString(2);
 
-  if (res.length < n) {
-    for (let i = 0; i <= (n - res.length); ++i) {
+  while (res.length < n) {
       res = '0' + res;
-    }
   }
   return res;
 }
