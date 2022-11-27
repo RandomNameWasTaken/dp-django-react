@@ -264,7 +264,6 @@ widgetsnbextension==3.5.2
 wrapt==1.14.0
 wsproto==1.1.0
 xgboost==1.6.1
-xonsh==0.9.13
 xxhash==3.0.0
 yarl==1.7.2
 zipp==3.7.0
