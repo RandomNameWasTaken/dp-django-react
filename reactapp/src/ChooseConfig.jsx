@@ -47,7 +47,7 @@ class ChooseConfig extends React.Component {
         element.classList = [];
       } else {
         axios
-          .get("http://127.0.0.1:8000/check_syntax", { params:
+          .get("https://bool-net-state-space-vis.herokuapp.com/check_syntax", { params:
               {
                 line : line,
                 nodes: this.state.nodes,
@@ -214,7 +214,7 @@ class ChooseConfig extends React.Component {
         };
 
         axios
-            .get("http://127.0.0.1:8000/get_nodes", { params: data_params })
+            .get("https://bool-net-state-space-vis.herokuapp.com/get_nodes", { params: data_params })
             .then(response => {
                 if (response.data === "" || !response.data) {
                   this.setState({ error : true });
@@ -404,7 +404,7 @@ class ChooseConfig extends React.Component {
         }
 
         axios
-            .get("http://127.0.0.1:8000/get_data/", { params: data_params })
+            .get("https://bool-net-state-space-vis.herokuapp.com/get_data/", { params: data_params })
             .then(response => {
               if (response.data === "" || !response.data) {
                 this.setState({ error : true });
