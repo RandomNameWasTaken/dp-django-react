@@ -30,7 +30,6 @@ chardet==3.0.4
 charset-normalizer==2.0.12
 chart-studio==1.1.0
 click==8.0.3
-cmdtest==0.32+git
 colorama==0.4.3
 colorlover==0.3.0
 command-not-found==0.3
