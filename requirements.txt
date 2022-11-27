@@ -122,9 +122,6 @@ nest-asyncio==1.5.4
 netifaces==0.10.4
 networkx==1.11
 nodeenv==1.7.0
-notebook==6.4.8
-numpy==1.21.4
-numpydoc==0.7.0
 oauthlib==3.1.0
 olefile==0.46
 opt-einsum==3.3.0
@@ -139,7 +136,6 @@ pathy==0.6.1
 patsy==0.5.2
 pexpect==4.6.0
 pickleshare==0.7.5
-Pillow==7.0.0
 pipenv==2022.9.24
 platformdirs==2.5.0
 ply==3.11
