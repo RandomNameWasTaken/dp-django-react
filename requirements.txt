@@ -176,9 +176,7 @@ pyrr==0.10.3
 pyrsistent==0.18.1
 pyserial==3.5
 PySocks==1.7.1
-python-apt==2.0.0+ubuntu0.20.4.8
 python-dateutil==2.7.3
-python-debian===0.1.36ubuntu1
 python-libtorrent==1.1.13
 python-slugify==6.1.2
 python-xlib==0.23
