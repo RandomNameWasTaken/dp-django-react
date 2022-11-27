@@ -29,7 +29,6 @@ cfgv==3.3.1
 chardet==3.0.4
 charset-normalizer==2.0.12
 chart-studio==1.1.0
-chrome-gnome-shell==0.0.0
 cliapp==1.20180812.1
 click==8.0.3
 cmdtest==0.32+git
