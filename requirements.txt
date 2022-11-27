@@ -32,7 +32,6 @@ chart-studio==1.1.0
 click==8.0.3
 colorama==0.4.3
 colorlover==0.3.0
-command-not-found==0.3
 constantly==15.1.0
 cufflinks==0.17.3
 cupshelpers==1.0
