@@ -177,7 +177,6 @@ pyrsistent==0.18.1
 pyserial==3.5
 PySocks==1.7.1
 python-dateutil==2.7.3
-python-libtorrent==1.1.13
 python-slugify==6.1.2
 python-xlib==0.23
 pythreejs==2.3.0
