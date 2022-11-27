@@ -44,7 +44,6 @@ deluge==2.0.3
 dill==0.3.4
 distlib==0.3.4
 distro==1.4.0
-distro-info===0.23ubuntu1
 dj-database-url==1.0.0
 Django==4.1.1
 django-filter==22.1
