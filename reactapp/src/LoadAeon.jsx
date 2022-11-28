@@ -1,5 +1,6 @@
 import React from 'react';
 import App from './App';
+import WrongFile from './WrongFile';
 import { StateApp } from './StateApp.ts';
 import ChooseConfig from './ChooseConfig';
 import axios from "axios";
@@ -30,6 +31,12 @@ export default class LoadAeon extends React.Component {
       }
       
       const file = this.state.selectedFile;
+
+      const re_file_ending = /\.aeon$/;
+      if (!file.name.match( re_file_ending )) {
+        this.setState({ wrong_file : true });
+        return;
+      }
 
       var reader = new FileReader();
       reader.readAsText(file,'UTF-8');
@@ -92,6 +99,9 @@ export default class LoadAeon extends React.Component {
           return <App />;
         }
 
+        if (this.state.wrong_file) {
+          return <WrongFile expected=".aeon"/>;
+        }
         
         if (this.state.value === StateApp.ChooseConfig) {
           return <ChooseConfig file_read={this.state.file_read} async={this.state.async} sync={this.state.sync} selectedFile={this.state.selectedFile}/>;

@@ -1,5 +1,6 @@
 import React from 'react';
 import App from './App';
+import WrongFile from './WrongFile';
 import { StateApp } from './StateApp.ts';
 import Visualise from './Visualise';
 
@@ -18,6 +19,12 @@ export default class LoadJson extends React.Component {
     // On file upload (click the upload button)
     onFileUpload = () => {
         const file = this.state.selectedFile;
+
+        const re_file_ending = /\.json$/;
+        if (!file.name.match( re_file_ending )) {
+          this.setState({ wrong_file : true });
+          return;
+        }
 
         var reader = new FileReader();
         reader.readAsText(file,'UTF-8');
@@ -57,6 +64,10 @@ export default class LoadJson extends React.Component {
 
       if (this.state.value === StateApp.MainApp) {
         return <App />;
+      }
+
+      if (this.state.wrong_file) {
+        return <WrongFile expected=".json"/>;
       }
 
       if (this.state.value === StateApp.Visualise) {
