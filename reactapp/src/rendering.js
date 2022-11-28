@@ -3,7 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as dat from "dat.gui";
 import { Point, createPoint } from "./Point";
 import { Interaction } from "three.interaction-fixed";
-import { dec2bin, rad2degrees } from "./utils";
+import { dec2bin, rad2degrees, crossProduct } from "./utils";
 
 
 
@@ -126,14 +126,6 @@ function calcColorBacks(cluster) {
     });
   }
 
-  function crossProduct(a, b) {
-    return new THREE.Vector3(
-      a.y * b.z - a.z * b.y,
-      a.z * b.x - a.x * b.z,
-      a.x * b.y - a.y * b.x
-    );
-  }
-
   function createCylinder(
     data,
     id,
@@ -235,7 +227,7 @@ function calcColorBacks(cluster) {
         });
 
         div.innerHTML =
-          "<b>Rank</b>: " + data[id]["Rank"] + "<br><b>Nodes</b>: " + text;
+          "<b>Rank</b>: " + data[id]["Rank"] + "<br><b>Nodes</b>: " + text + (cylinder.userData.isAtractor ? "<br><b>Atraktor</b>" : "");
       });
 
       return cylinder;
