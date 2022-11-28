@@ -1,23 +1,19 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as dat from "dat.gui";
-import { Point, createPoint } from "./Point";
+import { Point } from "./Point";
 import { Interaction } from "three.interaction-fixed";
-import { dec2bin, rad2degrees, crossProduct } from "./utils";
+import * as rendering_utils from './rendering_utils.js';
 
-
-
-export function init3Dgraphics(canvas, div, gui_div, data, nodes_ids, h, w) {
+export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids, h, w) {
   if (data === undefined) {
     return false;
   }
 
   const CYLINDER_HEIGHT = 8;
-  const NEUTRAL_COLOR = "hsl(255, 0%, 46%)";
   const number_of_nodes = Object.keys(nodes_ids).length;
 
   const scene = new THREE.Scene();
-  //scene.background = new THREE.Color( 0xd3d3d3 );
   scene.background = new THREE.Color(0xf8f2ea);
   const camera = new THREE.PerspectiveCamera(
     75,
@@ -40,15 +36,11 @@ export function init3Dgraphics(canvas, div, gui_div, data, nodes_ids, h, w) {
   // For showing text information about clusters
   var texts = [];
   var cylinders = [];
-
-  //const axesHelper = new THREE.AxesHelper(100);
-  //scene.add(axesHelper);
-
   
   const gui = new dat.GUI( { autoPlace: false } );
   gui_div.append(gui.domElement);
   var parameters_colors = [
-    {check: true }, // color for back edges 
+    {check: true  }, // color for back edges 
     {check: false }, // color for ranks
     {check: false }, // color for None colors
   ]
@@ -64,11 +56,6 @@ export function init3Dgraphics(canvas, div, gui_div, data, nodes_ids, h, w) {
   ambientLight.position.set(20, 20, 20);
 
   scene.add(pointLight, ambientLight);
-
-  //const lightHelper = new THREE.PointLightHelper(pointLight);  // shows position of lighsource
-  //const gridHelper = new THREE.GridHelper(30, 20);
-
-  //scene.add(lightHelper, gridHelper);
 
   window.addEventListener("resize", function () {
     camera.aspect = canvas.width / canvas.height;
@@ -99,33 +86,6 @@ export function init3Dgraphics(canvas, div, gui_div, data, nodes_ids, h, w) {
     renderer.setSize(canvas.width, canvas.width);
   });
 
-
-function calcColorBacks(cluster) {
-  if (cluster["Backs"].length > 0) {
-    return "hsl(259, 20%, 30%)";
-  }
-
-  return NEUTRAL_COLOR;
-}
-
-  function calcColorRank(max, val) {
-
-    const min = 0
-    var minHue = 240, maxHue=0;
-    var curPercent = (val - min) / (max-min);
-    var colString = "hsl(" + ((curPercent * (maxHue-minHue) ) + minHue) + ",25%,40%)";
-    return colString;
-  }
-
-  function resetOpacity() {
-    cylinders.forEach(function (cylinder) {
-      const newMaterial = cylinder.material.clone();
-      newMaterial.transparent = false;
-      newMaterial.opacity = 1;
-      cylinder.material = newMaterial;
-    });
-  }
-
   function createCylinder(
     data,
     id,
@@ -137,16 +97,15 @@ function calcColorBacks(cluster) {
     rank_max
   ) {
 
-    const isAtractor =  data[id]["Color"] !== "";
+    const isAtractor = data[id]["Color"] !== "";
 
     const colorBacks = new THREE.Color(
-      isAtractor ? data[id]["Color"] : calcColorBacks(data[id])
+      isAtractor ? data[id]["Color"] : rendering_utils.calcColorBacks(data[id])
     );
 
     const colorRank = new THREE.Color(
-      isAtractor ? data[id]["Color"] : calcColorRank(rank_max, rank)
+      isAtractor ? data[id]["Color"] : rendering_utils.calcColorRank(rank_max, rank)
     );
-
 
     var cylinderMesh = function (
       startPoint,
@@ -158,8 +117,6 @@ function calcColorBacks(cluster) {
       colorRank,
       isAtractor
     ) {
-      /* edge from X to Y */
-      const direction = new THREE.Vector3().subVectors(endPoint, startPoint);
 
       const orientation = new THREE.Matrix4();
       /* THREE.Object3D().up (=Y) default orientation for all objects */
@@ -198,36 +155,15 @@ function calcColorBacks(cluster) {
       cylinder.userData.colorRank  = colorRank;
       cylinder.userData.isAtractor = isAtractor;
 
-      cylinder.on("click", function (ev) {
-        resetOpacity();
+      cylinder.on("click", function () {
+        rendering_utils.resetOpacity(cylinders);
         const newMaterial = cylinder.material.clone();
         newMaterial.transparent = true;
         newMaterial.opacity = 0.5;
         cylinder.material = newMaterial;
 
-        texts.forEach(function (text) {
-          var selectedObject = scene.getObjectByName(text.name);
-          scene.remove(selectedObject);
-        });
-
-        var text = "";
-        data[id]["Nodes"].forEach(function (elem) {
-          if (text !== "") {
-            text += ",";
-          }
-          text += " (";
-          const bin = dec2bin(elem, number_of_nodes);
-
-          for (let i = 0; i < bin.length; i++) {
-            if (bin[i] === "1") {
-              text += " " + nodes_ids[i];
-            }
-          }
-          text += " )";
-        });
-
-        div.innerHTML =
-          "<b>Rank</b>: " + data[id]["Rank"] + "<br><b>Nodes</b>: " + text + (cylinder.userData.isAtractor ? "<br><b>Atraktor</b>" : "");
+        rendering_utils.resetText(texts, scene);
+        description_div.innerHTML = rendering_utils.createDescriptionForCluster(data[id], cylinder, nodes_ids, number_of_nodes);
       });
 
       return cylinder;
@@ -247,48 +183,7 @@ function calcColorBacks(cluster) {
       colorBacks,
       colorRank,
       isAtractor
-    ); //new THREE.Mesh(geometryCyl, material);
-  }
-
-  function getChildsChilds(data, cluster) {
-    var childsChildCount = 0;
-    for (var i = 0; i < cluster["Desc"].length; ++i) {
-      childsChildCount += data[cluster["Desc"][i]].NodeCount;
-    }
-
-    if (cluster["Separate"] !== undefined) {
-      childsChildCount = data[cluster["Separate"]].NodeCount;
-    }
-
-    return childsChildCount;
-  }
-
-  function createLine(p1, p2, color) {
-    const material = new THREE.LineBasicMaterial( { color: color } );
-    const geometry = new THREE.BufferGeometry().setFromPoints( [p1, p2] );
-    const line = new THREE.Line( geometry, material );
-    scene.add( line );
-  }
-
-  function createCoordinatesForSingleSon(point, prevPoint, id) {
-    const dirVector = new THREE.Vector3(
-      point.x - prevPoint.x,
-      point.y - prevPoint.y,
-      point.z - prevPoint.z
     );
-
-    var newStartPoint = new Point(point.x, point.y, point.z); // to make copy
-    const newPoint = new Point(
-      dirVector.x + point.x,
-      dirVector.y + point.y,
-      dirVector.z + point.z
-    );
-
-    return Object.freeze({
-      id: id, //cluster["Desc"][0],
-      prevPoint: newStartPoint,
-      point: newPoint,
-    });
   }
 
   // prevPoint, point - upper and downer middle points of cylinder
@@ -297,7 +192,6 @@ function calcColorBacks(cluster) {
     scene,
     data,
     id,
-    max_branching,
     prevPointFirst,
     pointFirst,
     biggestRank
@@ -306,7 +200,6 @@ function calcColorBacks(cluster) {
       console.log("Id is undefined in clustering");
       return;
     }
-    const firstId = id;
 
     var tuple = Object.freeze({
       id: id,
@@ -328,9 +221,7 @@ function calcColorBacks(cluster) {
       var cluster = data[current];
       const childCount = cluster["Desc"].length;
 
-      console.log(current);
-
-      var childsChildCount = getChildsChilds(data, cluster);
+      var childsChildCount = rendering_utils.getChildsChilds(data, cluster);
 
       const upperRadius = cluster.NodeCount;
       const lowerRadius =
@@ -359,20 +250,20 @@ function calcColorBacks(cluster) {
       );
 
       if (cluster["Separate"] !== undefined) {
-          stack.push( createCoordinatesForSingleSon(point, prevPoint, cluster["Separate"]) );
+          stack.push( rendering_utils.createCoordinatesForSingleSon(point, prevPoint, cluster["Separate"]) );
       }
 
       for (var i = 0; i < childCount; ++i) {
 
         if (childCount === 1 && cluster["Separate"] === undefined) {
-          stack.push( createCoordinatesForSingleSon(point, prevPoint, cluster["Desc"][0]) );
+          stack.push( rendering_utils.createCoordinatesForSingleSon(point, prevPoint, cluster["Desc"][0]) );
           continue;
         }
 
         const uVector = new THREE.Vector3((-1) * dirVector.y, dirVector.x, 0).normalize();
 
         const adota = uVector.dot(uVector);
-        const crossProductVec = crossProduct(dirVector, uVector);
+        const crossProductVec = rendering_utils.crossProduct(dirVector, uVector);
         const vVector = crossProductVec.divideScalar(adota).normalize();
 
         // COMPUTE NEW COORDINATES around circle
@@ -418,49 +309,6 @@ function calcColorBacks(cluster) {
     }
   }
 
-  function compMaxBranching(data, key) {
-    let stack = [key];
-    var maximums = {};
-    var colors = {};
-
-    while (stack.length > 0) {
-      const current = stack.pop();
-      colors[current] = "G";
-      stack.push(current);
-
-      if (maximums[current] === undefined) {
-        maximums[current] = 0;
-      }
-
-      var count_black = 0;
-      const desc_count = data[current]["Desc"].length;
-      for (var i = 0; i < desc_count; ++i) {
-        if (colors[data[current]["Desc"][i]] === undefined) {
-          stack.push(data[current]["Desc"][i]);
-        }
-
-        if (colors[data[current]["Desc"][i]] === "B") {
-          count_black += 1;
-          maximums[current] = Math.max(
-            maximums[data[current]["Desc"][i]],
-            maximums[current]
-          );
-        }
-      }
-
-      if (count_black === desc_count) {
-        colors[current] = "B";
-        stack.pop();
-
-        if (desc_count > 1) {
-          maximums[current] += 1;
-        }
-      }
-    }
-
-    return maximums[key];
-  }
-
   function processClusters(scene, data) {
     var root_cluster_key = undefined;
     var biggestRank = 0;
@@ -471,17 +319,14 @@ function calcColorBacks(cluster) {
       biggestRank = Math.max(v["Rank"], biggestRank);
     });
 
-    const max_branching = compMaxBranching(data, root_cluster_key);
-
     const firstHeight = (biggestRank * CYLINDER_HEIGHT) / 2 + CYLINDER_HEIGHT;
-    const firstStartPoint = new Point(0, firstHeight, 0);
-    const firstEndPoint = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
+    const firstStartPoint = new Point(0, firstHeight,                   0);
+    const firstEndPoint   = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
 
     clustering(
       scene,
       data,
       root_cluster_key,
-      max_branching,
       firstStartPoint,
       firstEndPoint,
       biggestRank
@@ -518,7 +363,7 @@ function calcColorBacks(cluster) {
       if (e) {
         cylinders.forEach(function(cylinder) {
           if (!cylinder.userData.isAtractor) {
-            cylinder.material.color = new THREE.Color(NEUTRAL_COLOR);
+            cylinder.material.color = new THREE.Color(rendering_utils.NEUTRAL_COLOR);
           }
         });
       }

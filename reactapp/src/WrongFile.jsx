@@ -1,10 +1,5 @@
 import './App.css';
-
 import React from 'react';
-import LoadAeon from './LoadAeon';
-import LoadJson from './LoadJson';
-import Visualise from './Visualise';
-
 import { StateApp } from './StateApp.ts';
 import ExclaimIcon from './Icons/ExclaimIcon';
 import App from './App';

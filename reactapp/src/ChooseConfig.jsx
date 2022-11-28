@@ -105,7 +105,7 @@ class ChooseConfig extends React.Component {
         checked.push(name);
       } else {
         checked = checked.filter(function(value) {
-          return value != name;
+          return value !== name;
         });
       }
       this.setState({ checked_nodes: checked });

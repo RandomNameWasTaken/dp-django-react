@@ -1,6 +1,3 @@
-import * as THREE from "three";
-
-
 export function getWindowSize() {
     const main_div = document.getElementById('root');
     const innerWidth = main_div.clientWidth;
@@ -17,12 +14,4 @@ export function dec2bin(dec, n) {
       res = '0' + res;
   }
   return res;
-}
-
-export function crossProduct(a, b) {
-  return new THREE.Vector3(
-    a.y * b.z - a.z * b.y,
-    a.z * b.x - a.x * b.z,
-    a.x * b.y - a.y * b.x
-  );
 }

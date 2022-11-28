@@ -113,7 +113,7 @@ export default class Visualise extends React.Component {
 
                         const can_div = React.createElement('div', { id : "div" + index, class: "col-8" });
                         const gui_div = React.createElement('div', { id : "gui_div" + index, class: "col-4" });
-                        const divs = React.createElement('div', { class: "row" }, [can_div, gui_div,]);
+                        const divs = React.createElement('div', { class: "row" }, [gui_div, can_div]);
 
                         canvases.push(React.createElement('div', { class: "col-5" }, [divs, canvas]));
 
@@ -160,9 +160,7 @@ export default class Visualise extends React.Component {
                         const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
                         const can_div = React.createElement('div', { id : "div" + index, class: "col-8" });
                         const gui_div = React.createElement('div', { id : "gui_div" + index, class: "col-4" });
-                        const divs = React.createElement('div', { class: "row" }, [can_div, gui_div,]);
-
-                        canvases.push(React.createElement('div', { class: "col-5" }, [divs, canvas]));
+                        const divs = React.createElement('div', { class: "row" }, [gui_div, can_div]);
 
                         const cl = Object.keys(fileData[key]).length === 3 && Object.keys(fileData) === 1 ? "col-11" : "col-5";
                         canvases.push(React.createElement('div', { class: cl }, [divs, canvas]));
