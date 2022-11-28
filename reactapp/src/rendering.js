@@ -7,12 +7,13 @@ import { dec2bin, rad2degrees } from "./utils";
 
 
 
-export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
+export function init3Dgraphics(canvas, div, gui_div, data, nodes_ids, h, w) {
   if (data === undefined) {
     return false;
   }
 
   const CYLINDER_HEIGHT = 8;
+  const NEUTRAL_COLOR = "hsl(255, 0%, 46%)";
   const number_of_nodes = Object.keys(nodes_ids).length;
 
   const scene = new THREE.Scene();
@@ -44,12 +45,17 @@ export function init3Dgraphics(canvas, div, data, nodes_ids, h, w) {
   //scene.add(axesHelper);
 
   
-  const gui = new dat.GUI();
-  const options = {
-    rank_color: false,
-    back_edges: true,
-    wire_frame: false,
-  };
+  const gui = new dat.GUI( { autoPlace: false } );
+  gui_div.append(gui.domElement);
+  var parameters_colors = [
+    {check: true }, // color for back edges 
+    {check: false }, // color for ranks
+    {check: false }, // color for None colors
+  ]
+
+  var parameters_wireframe = [
+    {check: false }, 
+  ]
 
   const pointLight = new THREE.PointLight(0x818085);
   pointLight.position.set(20, 20, 20);
@@ -99,7 +105,7 @@ function calcColorBacks(cluster) {
     return "hsl(259, 20%, 30%)";
   }
 
-  return "hsl(255, 0%, 46%)";
+  return NEUTRAL_COLOR;
 }
 
   function calcColorRank(max, val) {
@@ -138,15 +144,17 @@ function calcColorBacks(cluster) {
     rank,
     rank_max
   ) {
+
+    const isAtractor =  data[id]["Color"] !== "";
+
     const colorBacks = new THREE.Color(
-      data[id]["Color"] === "" ? calcColorBacks(data[id]) : data[id]["Color"]
+      isAtractor ? data[id]["Color"] : calcColorBacks(data[id])
     );
 
     const colorRank = new THREE.Color(
-      data[id]["Color"] === "" ? calcColorRank(rank_max, rank) : data[id]["Color"]
+      isAtractor ? data[id]["Color"] : calcColorRank(rank_max, rank)
     );
-    //color.setHex(rank/10 * 0xffffff );
-    // color.setHex(rank/10 * 0xffffff );
+
 
     var cylinderMesh = function (
       startPoint,
@@ -155,7 +163,8 @@ function calcColorBacks(cluster) {
       currRadius,
       nextRadius,
       colorBacks,
-      colorRank
+      colorRank,
+      isAtractor
     ) {
       /* edge from X to Y */
       const direction = new THREE.Vector3().subVectors(endPoint, startPoint);
@@ -195,6 +204,7 @@ function calcColorBacks(cluster) {
 
       cylinder.userData.colorBacks = colorBacks;
       cylinder.userData.colorRank  = colorRank;
+      cylinder.userData.isAtractor = isAtractor;
 
       cylinder.on("click", function (ev) {
         resetOpacity();
@@ -243,7 +253,8 @@ function calcColorBacks(cluster) {
       currRadius,
       nextRadius,
       colorBacks,
-      colorRank
+      colorRank,
+      isAtractor
     ); //new THREE.Mesh(geometryCyl, material);
   }
 
@@ -484,28 +495,57 @@ function calcColorBacks(cluster) {
       biggestRank
     );
 
-    /*
-    gui.add(options, 'back_edges').onChange(function(e) {
-      cylinders.forEach(function(cylinder) {
-        if (!cylinder.userData.isAtractor) {
-          cylinder.material.color = e ? cylinder.userData.colorBacks : "hsl(255, 0%, 46%)";
-        }
-      });
+    var folder = gui.addFolder("Colors");
+    folder.add(parameters_colors[0], 'check').name('Back edges').listen().onChange(function(e)
+    {
+      setChecked(0);
+      if (e) {
+        cylinders.forEach(function(cylinder) {
+          if (!cylinder.userData.isAtractor) {
+            cylinder.material.color = cylinder.userData.colorBacks;
+          }
+        });
+      }
     });
-    
-    gui.add(options, 'wire_frame').onChange(function(e) {
+
+    folder.add(parameters_colors[1], 'check').name('Ranks').listen().onChange(function(e)
+    {
+      setChecked(1);
+      if (e) {
+        cylinders.forEach(function(cylinder) {
+          if (!cylinder.userData.isAtractor) {
+            cylinder.material.color = cylinder.userData.colorRank;
+          }
+        });
+      }
+    });
+
+    folder.add(parameters_colors[2], 'check').name('None').listen().onChange(function(e)
+    {
+      setChecked(2);
+      if (e) {
+        cylinders.forEach(function(cylinder) {
+          if (!cylinder.userData.isAtractor) {
+            cylinder.material.color = new THREE.Color(NEUTRAL_COLOR);
+          }
+        });
+      }
+    });
+
+    var folder_wireframe = gui.addFolder("Wireframe");
+    folder_wireframe.add(parameters_wireframe[0], 'check').name('Wireframe').listen().onChange(function(e)
+    {
       cylinders.forEach(function(cylinder) {
         cylinder.material.wireframe = e;
       });
-    });
+    }); 
 
-    gui.add(options, 'rank_color').onChange(function(e) {
-      cylinders.forEach(function(cylinder) {
-        if (!cylinder.userData.isAtractor) {
-          cylinder.material.color = e ? cylinder.userData.colorRank : "hsl(255, 0%, 46%)";
-        }
-      });
-    });
-    */
+    function setChecked( prop ){
+      for (let param in parameters_colors){
+        parameters_colors[param].check = false;
+      }
+      parameters_colors[prop].check = true;
+    }
+    
   }
 }

@@ -110,9 +110,12 @@ export default class Visualise extends React.Component {
                         width = Math.floor(window_sizes.innerWidth / (division + 1));
                         
                         const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
-                        const can_div = React.createElement('div', { id : "div" + index });
 
-                        canvases.push(React.createElement('div', { class: "col-5" }, [can_div, canvas]));
+                        const can_div = React.createElement('div', { id : "div" + index, class: "col-8" });
+                        const gui_div = React.createElement('div', { id : "gui_div" + index, class: "col-4" });
+                        const divs = React.createElement('div', { class: "row" }, [can_div, gui_div,]);
+
+                        canvases.push(React.createElement('div', { class: "col-5" }, [divs, canvas]));
 
                         const quotient = Math.floor(index/2);
                         const remain = index % 2;
@@ -155,10 +158,14 @@ export default class Visualise extends React.Component {
                         width = Math.floor(window_sizes.innerWidth / (division + 1));
 
                         const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
-                        const can_div = React.createElement('div', { id : "div" + index } );
+                        const can_div = React.createElement('div', { id : "div" + index, class: "col-8" });
+                        const gui_div = React.createElement('div', { id : "gui_div" + index, class: "col-4" });
+                        const divs = React.createElement('div', { class: "row" }, [can_div, gui_div,]);
+
+                        canvases.push(React.createElement('div', { class: "col-5" }, [divs, canvas]));
 
                         const cl = Object.keys(fileData[key]).length === 3 && Object.keys(fileData) === 1 ? "col-11" : "col-5";
-                        canvases.push(React.createElement('div', { class: cl }, [can_div, canvas]));
+                        canvases.push(React.createElement('div', { class: cl }, [divs, canvas]));
 
                         const quotient = Math.floor(index/2);
                         const remain = index % 2;
@@ -201,8 +208,9 @@ export default class Visualise extends React.Component {
                         const data = fileData[key][sem];
                         const canvas = document.getElementById("canvas" + index);
                         const div = document.getElementById("div" + index);
+                        const gui_div = document.getElementById("gui_div" + index);
 
-                        init3Dgraphics(canvas, div, data, fileData[key]['Nodes'], width_height[index]['w'], width_height[index]['h']);
+                        init3Dgraphics(canvas, div, gui_div, data, fileData[key]['Nodes'], width_height[index]['w'], width_height[index]['h']);
 
                         index += 1;
                     }
