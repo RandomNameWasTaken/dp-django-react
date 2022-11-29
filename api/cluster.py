@@ -22,7 +22,7 @@ def get_name(number, nodes):
     return res
 
 def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
-    anc_function = get_ancestor_function(semantics)
+    anc_function   = get_ancestor_function(semantics)
     child_function = get_generate_function(semantics)
 
     stack = [ (root, None) ]
@@ -55,7 +55,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
                 new_cluster = ClusterNode(node_info[child]['rank'], child)
                 stack.append((child, None))
                 node_info[child]['cluster'] = new_cluster
-                curr_cluster.desc.add(new_cluster)
+                curr_cluster.desc_nodes.add(child)
                 continue
         
         (node_check, node_check_children) = stack[-1]
@@ -76,31 +76,14 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
                     ancestor_by_ranks[r] = node_info[ancestor_key]['cluster']
                     continue
 
-                # Check descendants
-                for node in node_info:
-                    if 'cluster' not in node_info[node]:
-                        continue
-
-                    is_descendant = False
-                    for desc in node_info[node]['cluster'].desc:
-                        if desc == node_info[ancestor_key]['cluster']:
-                            is_descendant = True
-                            break
-                    if is_descendant:
-                        node_info[node]['cluster'].desc.remove(node_info[ancestor_key]['cluster'])
-                        node_info[node]['cluster'].desc.add(ancestor_by_ranks[r])
-
                 cluster_to_join = node_info[ancestor_key]['cluster']
-
-                for node in node_info[ancestor_key]['cluster'].nodes:
-                    node_info[node]['cluster'] = ancestor_by_ranks[r]
-
                 ancestor_by_ranks[r].join_cluster(cluster_to_join)
+                for node in ancestor_by_ranks[r].nodes:
+                    node_info[node]['cluster'] = ancestor_by_ranks[r]
                  
             stack.pop()
 
 
-    # Compute descendants     
     clusters = set()
     for node in node_info:
         if 'cluster' not in node_info[node]:
@@ -111,6 +94,10 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
         for backs in node_info[node]['back']:
             if 'cluster' in node_info[backs]:
                 cluster.backs.add(node_info[backs]['cluster'])
+
+        for desc in node_info[node]['cluster'].desc_nodes:
+            if 'cluster' in node_info[desc]:
+                cluster.desc.add(node_info[desc]['cluster'])
         
         clusters.add(cluster)
 
