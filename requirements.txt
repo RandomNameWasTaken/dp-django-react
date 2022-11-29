@@ -10,6 +10,3 @@ keyring==18.0.1
 mypy_extensions==0.4.3
 numpy==1.17.4
 ordereddict==1.1
-wincertstore==0.2.1
-Python==3.8.10
-
