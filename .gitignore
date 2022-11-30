@@ -1,2 +1,4 @@
 api/__pycache__/*
 todo/__pycache__/*
+install*
+.env
