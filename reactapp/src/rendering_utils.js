@@ -1,10 +1,7 @@
 import { dec2bin } from './utils.js';
 import * as THREE from "three";
 import { Point } from "./Point";
-import { OBJExporter } from "three/examples/jsm/exporters/OBJExporter.js";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
-import { ColladaExporter } from "three/examples/jsm/exporters/ColladaExporter.js";
-
 
 export const NEUTRAL_COLOR = "hsl(255, 0%, 46%)";
 
@@ -219,10 +216,18 @@ export function createControls(gui, cylinders, group) {
   const params_move = {
     right: moveObjectToRight,
     left: moveObjectToLeft,
+    up: moveObjectUp,
+    down: moveObjectDown,
+    close: modeObjectCloser,
+    far: moveObjectFar,
   };
   var folder_move = gui.addFolder("Move");
 	folder_move.add( params_move, 'right' ).name( 'Move to right' );
 	folder_move.add( params_move, 'left' ).name( 'Move to left' );
+	folder_move.add( params_move, 'up' ).name( 'Move up' );
+	folder_move.add( params_move, 'down' ).name( 'Move down' );
+	folder_move.add( params_move, 'close' ).name( 'Move closer' );
+	folder_move.add( params_move, 'far' ).name( 'Move away' );
 
   function moveObjectToRight() {
     group.position.set(group.position.x + 5, group.position.y, group.position.z);
@@ -230,7 +235,23 @@ export function createControls(gui, cylinders, group) {
 
   function moveObjectToLeft() {
     group.position.set(group.position.x - 5, group.position.y, group.position.z);
-  }  
+  }
+
+  function moveObjectUp() {
+    group.position.set(group.position.x, group.position.y + 5, group.position.z);
+  }
+
+  function moveObjectDown() {
+    group.position.set(group.position.x, group.position.y - 5, group.position.z);
+  }
+
+  function modeObjectCloser() {
+    group.position.set(group.position.x, group.position.y, group.position.z + 5);
+  }
+
+  function moveObjectFar() {
+    group.position.set(group.position.x, group.position.y, group.position.z - 5);
+  }
 
   function exportGLTEObject() {
     return exportGLTE(group);
