@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { init3Dgraphics } from './rendering.js';
 import { StateApp } from './StateApp.ts';
 import InfoIcon from './Icons/InfoIcon';
+import DownloadIcon from './Icons/DownloadIcon';
 import { getWindowSize, dec2bin  } from "./utils";
 
 
@@ -14,6 +15,19 @@ export default class Visualise extends React.Component {
     handleBackButton = event => {
         window.location.reload(false);
     };
+
+    getExportButton = (index) => {
+        return React.createElement('span', { name: "Export", onClick: () => { this.handleExport(index) } }, [ React.createElement(DownloadIcon, { size: "40" }) ]);
+    }
+
+    createInfo = (fileData, key, index, both_semantics) => {
+        const param_lines = fileData[key]["Lines"].length > 0 ? React.createElement('div', { class : "row"}, [<InfoIcon title={fileData[key]["Lines"]}/>]) : '';
+        const number =  React.createElement('div', { class : "row" }, [ Number(key) + 1 ]);
+
+        var elements = [ param_lines, number, React.createElement('br') ];
+
+        return React.createElement("h3", { class : "col-1"}, elements);
+    }
 
     findStartingCluster = (data, param, sem) => {
         if (this.state.startState !== undefined) {
@@ -86,8 +100,8 @@ export default class Visualise extends React.Component {
             var width_height = {};
             if (both_semantics) {
                 for (var key in fileData) {
-                    canvases.push(React.createElement("h3", { class : "col-1"}, [ fileData[key]["Lines"].length > 0 ? <InfoIcon title={fileData[key]["Lines"]}/> : '', Number(key) + 1]));
-
+                    canvases.push(this.createInfo(fileData, key, index, both_semantics));
+                    
                     for (var sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
                             if (sem === 'NumberOfNodes') {
@@ -134,7 +148,7 @@ export default class Visualise extends React.Component {
 
             } else {
                 for (key in fileData) {
-                    canvases.push(React.createElement("h3", { class : "col-1"}, [ fileData[key]["Lines"].length > 0 ? <InfoIcon title={fileData[key]["Lines"]}/> : '', Number(key) + 1]));
+                    canvases.push(this.createInfo(fileData, key, index, both_semantics));
 
                     for (sem in fileData[key]) {
                         if (sem === 'Lines' || sem === 'Nodes') {
@@ -209,6 +223,9 @@ export default class Visualise extends React.Component {
                         const gui_div = document.getElementById("gui_div" + index);
 
                         init3Dgraphics(canvas, div, gui_div, data, fileData[key]['Nodes'], width_height[index]['w'], width_height[index]['h']);
+                        //this.setState({ 'obj' : obj });
+                        //const scene = init3Dgraphics(canvas, div, gui_div, data, fileData[key]['Nodes'], width_height[index]['w'], width_height[index]['h']);
+                        //this.setState({ key: scene });
 
                         index += 1;
                     }
@@ -231,8 +248,8 @@ export default class Visualise extends React.Component {
         if (this.state.both) {
             headline =
                     <div class="row">
-                        <h3 class="col-6 App">Asymetric</h3>
-                        <h3 class="col-6 App">Symetric</h3>
+                        <h3 class="col-6 App">Asymmetric</h3>
+                        <h3 class="col-6 App">Symmetric</h3>
                     </div>;
         }
 

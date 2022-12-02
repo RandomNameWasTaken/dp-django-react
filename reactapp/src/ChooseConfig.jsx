@@ -188,7 +188,7 @@ class ChooseConfig extends React.Component {
                 <form onSubmit={this.handleSubmit}> 
 
                 <div class="col-lg-6 btn wrapper" onClick={this.handleSave} >
-                  <DownloadIcon />
+                  <DownloadIcon size="100"/>
                   <br/>
                   <h3 class="wrapperh3">Download</h3>
                   <p>Download precomputed clusters as JSON file.</p>

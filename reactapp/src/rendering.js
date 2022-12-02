@@ -39,15 +39,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
   
   const gui = new dat.GUI( { autoPlace: false } );
   gui_div.append(gui.domElement);
-  var parameters_colors = [
-    {check: true  }, // color for back edges 
-    {check: false }, // color for ranks
-    {check: false }, // color for None colors
-  ]
 
-  var parameters_wireframe = [
-    {check: false }, 
-  ]
 
   const pointLight = new THREE.PointLight(0x818085);
   pointLight.position.set(20, 20, 20);
@@ -85,6 +77,79 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
     camera.updateProjectionMatrix();
     renderer.setSize(canvas.width, canvas.width);
   });
+
+
+  /* SETTING CONTROLS */
+  /* COLOR */
+  var parameters_colors = [
+    {check: true  }, // color for back edges 
+    {check: false }, // color for ranks
+    {check: false }, // color for None colors
+  ];
+
+  var folder = gui.addFolder("Colors");
+  folder.add(parameters_colors[0], 'check').name('Back edges').listen().onChange(function(e)
+  {
+    setChecked(0);
+    if (e) {
+      cylinders.forEach(function(cylinder) {
+        if (!cylinder.userData.isAtractor) {
+          cylinder.material.color = cylinder.userData.colorBacks;
+        }
+      });
+    }
+  });
+
+  folder.add(parameters_colors[1], 'check').name('Ranks').listen().onChange(function(e)
+  {
+    setChecked(1);
+    if (e) {
+      cylinders.forEach(function(cylinder) {
+        if (!cylinder.userData.isAtractor) {
+          cylinder.material.color = cylinder.userData.colorRank;
+        }
+      });
+    }
+  });
+
+  folder.add(parameters_colors[2], 'check').name('None').listen().onChange(function(e)
+  {
+    setChecked(2);
+    if (e) {
+      cylinders.forEach(function(cylinder) {
+        if (!cylinder.userData.isAtractor) {
+          cylinder.material.color = new THREE.Color(rendering_utils.NEUTRAL_COLOR);
+        }
+      });
+    }
+  });
+
+  function setChecked( prop ){
+    for (let param in parameters_colors){
+      parameters_colors[param].check = false;
+    }
+    parameters_colors[prop].check = true;
+  }
+
+  /* Export */
+
+  const params_export = {
+    export: exportGLTEObject,
+  };
+  var folder_export = gui.addFolder("Export");
+	folder_export.add( params_export, 'export' ).name( 'Export in gltf format' );
+
+  /* CONTROLS END */
+
+  const group = new THREE.Group();
+  cylinders.forEach(function (cyl) {
+    group.add(cyl)
+  });
+  scene.add(group);
+
+  function exportGLTEObject() {
+    return rendering_utils.exportGLTE(group);
+  }
 
   function createCylinder(
     data,
@@ -189,8 +254,6 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
   // prevPoint, point - upper and downer middle points of cylinder
   // dirPoint - point to which direction of cylinder (dir vector) should go
   function clustering(
-    scene,
-    data,
     id,
     prevPointFirst,
     pointFirst,
@@ -324,65 +387,11 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
     const firstEndPoint   = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
 
     clustering(
-      scene,
-      data,
       root_cluster_key,
       firstStartPoint,
       firstEndPoint,
       biggestRank
     );
-
-    var folder = gui.addFolder("Colors");
-    folder.add(parameters_colors[0], 'check').name('Back edges').listen().onChange(function(e)
-    {
-      setChecked(0);
-      if (e) {
-        cylinders.forEach(function(cylinder) {
-          if (!cylinder.userData.isAtractor) {
-            cylinder.material.color = cylinder.userData.colorBacks;
-          }
-        });
-      }
-    });
-
-    folder.add(parameters_colors[1], 'check').name('Ranks').listen().onChange(function(e)
-    {
-      setChecked(1);
-      if (e) {
-        cylinders.forEach(function(cylinder) {
-          if (!cylinder.userData.isAtractor) {
-            cylinder.material.color = cylinder.userData.colorRank;
-          }
-        });
-      }
-    });
-
-    folder.add(parameters_colors[2], 'check').name('None').listen().onChange(function(e)
-    {
-      setChecked(2);
-      if (e) {
-        cylinders.forEach(function(cylinder) {
-          if (!cylinder.userData.isAtractor) {
-            cylinder.material.color = new THREE.Color(rendering_utils.NEUTRAL_COLOR);
-          }
-        });
-      }
-    });
-
-    var folder_wireframe = gui.addFolder("Wireframe");
-    folder_wireframe.add(parameters_wireframe[0], 'check').name('Wireframe').listen().onChange(function(e)
-    {
-      cylinders.forEach(function(cylinder) {
-        cylinder.material.wireframe = e;
-      });
-    }); 
-
-    function setChecked( prop ){
-      for (let param in parameters_colors){
-        parameters_colors[param].check = false;
-      }
-      parameters_colors[prop].check = true;
-    }
     
   }
 }
