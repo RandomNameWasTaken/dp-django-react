@@ -19,4 +19,5 @@ def main():
 
 
 if __name__ == "__main__":
+    os.system('cd reactapp && npm install && npm run build && cd ..')
     main()
