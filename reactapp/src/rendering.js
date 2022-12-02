@@ -27,7 +27,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
 
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(canvas.width, canvas.height); // full size
-  camera.position.setZ(30); // for better perspective
+  camera.position.setZ(100); // for better perspective
   renderer.sortObjects = false;
   renderer.render(scene, camera);
 
@@ -76,70 +76,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
     camera.aspect = canvas.width / canvas.width;
     camera.updateProjectionMatrix();
     renderer.setSize(canvas.width, canvas.width);
-  });
-
-
-  /* SETTING CONTROLS */
-  /* COLOR */
-  var parameters_colors = [
-    {check: true  }, // color for back edges 
-    {check: false }, // color for ranks
-    {check: false }, // color for None colors
-  ];
-
-  var folder = gui.addFolder("Colors");
-  folder.add(parameters_colors[0], 'check').name('Back edges').listen().onChange(function(e)
-  {
-    setChecked(0);
-    if (e) {
-      cylinders.forEach(function(cylinder) {
-        if (!cylinder.userData.isAtractor) {
-          cylinder.material.color = cylinder.userData.colorBacks;
-        }
-      });
-    }
-  });
-
-  folder.add(parameters_colors[1], 'check').name('Ranks').listen().onChange(function(e)
-  {
-    setChecked(1);
-    if (e) {
-      cylinders.forEach(function(cylinder) {
-        if (!cylinder.userData.isAtractor) {
-          cylinder.material.color = cylinder.userData.colorRank;
-        }
-      });
-    }
-  });
-
-  folder.add(parameters_colors[2], 'check').name('None').listen().onChange(function(e)
-  {
-    setChecked(2);
-    if (e) {
-      cylinders.forEach(function(cylinder) {
-        if (!cylinder.userData.isAtractor) {
-          cylinder.material.color = new THREE.Color(rendering_utils.NEUTRAL_COLOR);
-        }
-      });
-    }
-  });
-
-  function setChecked( prop ){
-    for (let param in parameters_colors){
-      parameters_colors[param].check = false;
-    }
-    parameters_colors[prop].check = true;
-  }
-
-  /* Export */
-
-  const params_export = {
-    export: exportGLTEObject,
-  };
-  var folder_export = gui.addFolder("Export");
-	folder_export.add( params_export, 'export' ).name( 'Export in gltf format' );
-
-  /* CONTROLS END */
+  });  
 
   const group = new THREE.Group();
   cylinders.forEach(function (cyl) {
@@ -147,9 +84,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
   });
   scene.add(group);
 
-  function exportGLTEObject() {
-    return rendering_utils.exportGLTE(group);
-  }
+  rendering_utils.createControls(gui, cylinders, group);
 
   function createCylinder(
     data,
@@ -383,8 +318,8 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
     });
 
     const firstHeight = (biggestRank * CYLINDER_HEIGHT) / 2 + CYLINDER_HEIGHT;
-    const firstStartPoint = new Point(0, firstHeight,                   0);
-    const firstEndPoint   = new Point(0, firstHeight - CYLINDER_HEIGHT, 0);
+    const firstStartPoint = new Point(-20, firstHeight,                   0);
+    const firstEndPoint   = new Point(-20, firstHeight - CYLINDER_HEIGHT, 0);
 
     clustering(
       root_cluster_key,

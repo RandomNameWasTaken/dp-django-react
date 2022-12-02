@@ -154,3 +154,86 @@ export function exportGLTE(input) {
     }
   );
 };
+
+export function createControls(gui, cylinders, group) {
+
+  /* Colors */
+  var parameters_colors = [
+    {check: true  }, // color for back edges 
+    {check: false }, // color for ranks
+    {check: false }, // color for None colors
+  ];
+
+  var folder = gui.addFolder("Colors");
+  folder.add(parameters_colors[0], 'check').name('Back edges').listen().onChange(function(e)
+  {
+    setChecked(0);
+    if (e) {
+      cylinders.forEach(function(cylinder) {
+        if (!cylinder.userData.isAtractor) {
+          cylinder.material.color = cylinder.userData.colorBacks;
+        }
+      });
+    }
+  });
+
+  folder.add(parameters_colors[1], 'check').name('Ranks').listen().onChange(function(e)
+  {
+    setChecked(1);
+    if (e) {
+      cylinders.forEach(function(cylinder) {
+        if (!cylinder.userData.isAtractor) {
+          cylinder.material.color = cylinder.userData.colorRank;
+        }
+      });
+    }
+  });
+
+  folder.add(parameters_colors[2], 'check').name('None').listen().onChange(function(e)
+  {
+    setChecked(2);
+    if (e) {
+      cylinders.forEach(function(cylinder) {
+        if (!cylinder.userData.isAtractor) {
+          cylinder.material.color = new THREE.Color(NEUTRAL_COLOR);
+        }
+      });
+    }
+  });
+
+  function setChecked( prop ){
+    for (let param in parameters_colors){
+      parameters_colors[param].check = false;
+    }
+    parameters_colors[prop].check = true;
+  }
+
+  /* Export */
+  const params_export = {
+    export: exportGLTEObject,
+  };
+  var folder_export = gui.addFolder("Export");
+	folder_export.add( params_export, 'export' ).name( 'Export in gltf format' );
+
+  /* Move */
+  const params_move = {
+    right: moveObjectToRight,
+    left: moveObjectToLeft,
+  };
+  var folder_move = gui.addFolder("Move");
+	folder_move.add( params_move, 'right' ).name( 'Move to right' );
+	folder_move.add( params_move, 'left' ).name( 'Move to left' );
+
+  function moveObjectToRight() {
+    group.position.set(group.position.x + 5, group.position.y, group.position.z);
+  }
+
+  function moveObjectToLeft() {
+    group.position.set(group.position.x - 5, group.position.y, group.position.z);
+  }  
+
+  function exportGLTEObject() {
+    return exportGLTE(group);
+  }
+
+}
