@@ -25,6 +25,8 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
     anc_function   = get_ancestor_function(semantics)
     child_function = get_generate_function(semantics)
 
+    visited = set()
+
     stack = [ (root, None) ]
     first_cluster = ClusterNode(0, root)
     node_info[root]['cluster'] = first_cluster
@@ -33,13 +35,19 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
         (curr_node, children_comp) = stack[-1]
         curr_cluster = node_info[curr_node]['cluster']
 
+        visited.add(curr_node)
+
         children = child_function(curr_node, number_of_nodes, nodes, updates, node_info) if children_comp is None else children_comp
         stack[-1] = (curr_node, children)
-        for child in children:
 
+        for child in children:
+        #    print(str(child) + " " + str(node_info[child]['rank']))
             if node_info[child]['rank'] < node_info[curr_node]['rank']:
                 node_info[curr_node]['back'].add(child)
                 continue
+            
+            if node_info[curr_node]['rank'] + 1 == node_info[child]['rank']:
+                curr_cluster.desc_nodes.add(child)
 
             if 'cluster' in node_info[child]:
                 continue
@@ -55,33 +63,33 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
                 new_cluster = ClusterNode(node_info[child]['rank'], child)
                 stack.append((child, None))
                 node_info[child]['cluster'] = new_cluster
-                curr_cluster.desc_nodes.add(child)
                 continue
         
         (node_check, node_check_children) = stack[-1]
         # Ak je node "black" 
         if node_check == curr_node:
-
-            ancestors = anc_function(curr_node, number_of_nodes, nodes, updates, node_info)
-            ancestor_by_ranks = {} # To cluster ancestors with same rank
-            for ancestor_key in ancestors:
-                if ancestor_key not in node_info:
-                    continue
-                    
-                if 'cluster' not in node_info[ancestor_key]:
-                    continue
-
-                r = node_info[ancestor_key]['rank']
-                if r not in ancestor_by_ranks:
-                    ancestor_by_ranks[r] = node_info[ancestor_key]['cluster']
-                    continue
-
-                cluster_to_join = node_info[ancestor_key]['cluster']
-                ancestor_by_ranks[r].join_cluster(cluster_to_join)
-                for node in ancestor_by_ranks[r].nodes:
-                    node_info[node]['cluster'] = ancestor_by_ranks[r]
                  
             stack.pop()
+
+    for curr_node in visited:
+        ancestors = anc_function(curr_node, number_of_nodes, nodes, updates, node_info)
+        ancestor_by_ranks = {} # To cluster ancestors with same rank
+        for ancestor_key in ancestors:
+            if ancestor_key not in node_info:
+                continue
+                
+            if 'cluster' not in node_info[ancestor_key]:
+                continue
+
+            r = node_info[ancestor_key]['rank']
+            if r not in ancestor_by_ranks:
+                ancestor_by_ranks[r] = node_info[ancestor_key]['cluster']
+                continue
+
+            cluster_to_join = node_info[ancestor_key]['cluster']
+            ancestor_by_ranks[r].join_cluster(cluster_to_join)
+            for node in ancestor_by_ranks[r].nodes:
+                node_info[node]['cluster'] = ancestor_by_ranks[r]
 
 
     clusters = set()
