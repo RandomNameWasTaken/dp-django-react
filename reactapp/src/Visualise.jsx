@@ -96,112 +96,63 @@ export default class Visualise extends React.Component {
             }
             this.setState({ both : both_semantics });
 
-
             var width_height = {};
-            if (both_semantics) {
-                for (var key in fileData) {
-                    canvases.push(this.createInfo(fileData, key, index, both_semantics));
-                    
-                    for (var sem in fileData[key]) {
-                        if (sem === 'Lines' || sem === 'Nodes') {
-                            if (sem === 'NumberOfNodes') {
-                                this.setState({ number_of_nodes : fileData[key][sem] });
-                            }
-                            continue
+            for (var key in fileData) {
+                canvases.push(this.createInfo(fileData, key, index, both_semantics));
+
+                for (var sem in fileData[key]) {
+                    if (sem === 'Lines' || sem === 'Nodes') {
+                        if (sem === 'NumberOfNodes') {
+                            this.setState({ number_of_nodes : fileData[key][sem] });
                         }
-
-                        this.findStartingCluster(fileData, key, sem);
-
-                        var width = window_sizes.innerWidth;
-                        var height =  window_sizes.innerHeight;
-
-                        const division = Math.floor(canvas_number/2);
-                        if (division <= 1) {
-                            height = window_sizes.innerHeight;
-                        } else {
-                            height = Math.floor(window_sizes.innerHeight/2);
-                        }
-                        width = Math.floor(window_sizes.innerWidth / (division + 1));
-                        
-                        const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
-
-                        const can_div = React.createElement('div', { id : "div" + index, class: "col-8" });
-                        const gui_div = React.createElement('div', { id : "gui_div" + index, class: "col-4" });
-                        const divs = React.createElement('div', { class: "row" }, [gui_div, can_div]);
-
-                        canvases.push(React.createElement('div', { class: "col-5" }, [divs, canvas]));
-
-                        const quotient = Math.floor(index/2);
-                        const remain = index % 2;
-                        width_height[index] = { 'w' : remain * width, 'h': quotient * height };
-
-                        index += 1;
-                    }
-                    objects.push(React.createElement('div', { class: "row" }, canvases));
-                    canvases = [];
-                };
-                const div = React.createElement('div', { id : "canvases_react", class: "col" }, objects);
-                ReactDOM.render(
-                    div,
-                    document.getElementById('canvases')
-                );
-
-            } else {
-                for (key in fileData) {
-                    canvases.push(this.createInfo(fileData, key, index, both_semantics));
-
-                    for (sem in fileData[key]) {
-                        if (sem === 'Lines' || sem === 'Nodes') {
-                            if (sem === 'NumberOfNodes') {
-                                this.setState({ number_of_nodes : fileData[key][sem] });
-                            }
-                            continue
-                        }
-
-                        this.findStartingCluster(fileData, key, sem);
-
-                        width = window_sizes.innerWidth;
-                        height =  window_sizes.innerHeight;
-
-                        const division = Math.floor(canvas_number/2);
-                        if (division <= 1) {
-                            height = window_sizes.innerHeight;
-                        } else {
-                            height = Math.floor(window_sizes.innerHeight/2);
-                        }
-                        width = Math.floor(window_sizes.innerWidth / (division + 1));
-
-                        const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
-                        const can_div = React.createElement('div', { id : "div" + index, class: "col-8" });
-                        const gui_div = React.createElement('div', { id : "gui_div" + index, class: "col-4" });
-                        const divs = React.createElement('div', { class: "row" }, [gui_div, can_div]);
-
-                        const cl = Object.keys(fileData[key]).length === 3 && Object.keys(fileData) === 1 ? "col-11" : "col-5";
-                        canvases.push(React.createElement('div', { class: cl }, [divs, canvas]));
-
-                        const quotient = Math.floor(index/2);
-                        const remain = index % 2;
-                        width_height[index] = { 'w' : remain * width, 'h': quotient * height };
-
-                        index += 1;
+                        continue
                     }
 
-                    if (index % 2 === 0) {
-                        objects.push(React.createElement('div', { class: "row" }, canvases));
-                        canvases = [];
-                    }
-                };
+                    this.findStartingCluster(fileData, key, sem);
 
-                if (canvases.length > 0) {
-                    objects.push(React.createElement('div', { class: "row" }, canvases));
+                    var width = window_sizes.innerWidth;
+                    var height =  window_sizes.innerHeight;
+
+                    const division = Math.floor(canvas_number/2);
+                    if (division <= 1) {
+                        height = window_sizes.innerHeight;
+                    } else {
+                        height = Math.floor(window_sizes.innerHeight/2);
+                    }
+                    width = Math.floor(window_sizes.innerWidth / (division + 1));
+
+
+                    const canvas = React.createElement('canvas', { id : "canvas" + index, width: width, height: height });
+                    const can_div = React.createElement('div', { id : "div" + index, class: "col-8" });
+                    const gui_div = React.createElement('div', { id : "gui_div" + index, class: "col-4" });
+                    const divs = React.createElement('div', { class: "row" }, [gui_div, can_div]);
+
+                    const cl = Object.keys(fileData[key]).length === 3 && Object.keys(fileData) === 1 && !both_semantics ? "col-11" : "col-5";
+                    canvases.push(React.createElement('div', { class: cl }, [divs, canvas]));
+
+                    const quotient = Math.floor(index/2);
+                    const remain = index % 2;
+                    width_height[index] = { 'w' : remain * width, 'h': quotient * height };
+
+                    index += 1;
                 }
 
-                const div = React.createElement('div', { id : "canvases_react", class: "col" }, objects);
-                ReactDOM.render(
-                    div,
-                    document.getElementById('canvases')
-                );
+                if (both_semantics || index % 2 === 0 ) {
+                    objects.push(React.createElement('div', { class: "row" }, canvases));
+                    canvases = [];
+                } 
+            
             }
+
+            if (canvases.length > 0 && !both_semantics) {
+                objects.push(React.createElement('div', { class: "row" }, canvases));
+            }
+
+            const div = React.createElement('div', { id : "canvases_react", class: "col" }, objects);
+            ReactDOM.render(
+                div,
+                document.getElementById('canvases')
+            );
 
             this.setState({ canvases_rendered : true });
             this.setState({ width_height : width_height });
