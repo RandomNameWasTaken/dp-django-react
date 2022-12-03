@@ -2,7 +2,7 @@
 class ClusterNode:
 
     def __init__(self, rank, node):
-        self.nodes = { node }
+        self.nodes = set() if node is None else { node }
         self.desc = set()
         self.desc_nodes = set()
         self.rank = rank

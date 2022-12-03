@@ -1,65 +1,72 @@
-
-from copy import deepcopy
-
-
-def isStability(scc):
-    return len(scc) == 1
-
+from .clusterNode import *
 
 def isOscillation(scc):
     for item in scc:
-        if len(item.nodes) != 1 or len(item.desc) != 1:
+        if len(item.nodes) != 1 or len(item.desc) + len(item.backs) != 1:
             return False
     return True
 
-def getChildren(cluster, isDesc):
-    if isDesc:
-        return cluster.desc
-    return cluster.backs
-
-def getSCCset(cluster, reversed = False, checkOnlyThese = {}):
+def getSCCset(cluster, orig_cluster, checkOnlyThese = {}):
     result = set()
 
     queue = [cluster]
     visited = {}
     while queue:
-      curr = queue.pop()
-      result.add(curr)
-      visited[curr] = True
+        curr = queue.pop()
+        result.add(curr)
+        visited[curr] = True
 
-      for child in getChildren(curr, reversed):
-        if child in visited:
-            continue
+        for child in curr.desc:
+            if child in visited:
+                continue
 
-        if checkOnlyThese == {} or child in checkOnlyThese:
-            queue.append(child)
+            if checkOnlyThese == {} or child in checkOnlyThese:
+                queue.append(child)
+
+        for child in curr.backs:
+            if child in visited:
+                continue
+
+            if checkOnlyThese == {} or child in checkOnlyThese:
+                queue.append(child)
+
+
+    result_orig_clusters = set()
+    for cl in result:
+        result_orig_clusters.add(orig_cluster[cl.get_name()])
       
-    return result
+    return result_orig_clusters
 
-def removeNonterminalNodes(scc, cluster):
-    new_scc = deepcopy(scc)
+def removeNonterminalNodes(scc, cluster, cluster_rev, orig_cluster):
+    len_scc = len(scc)
+    to_remove = set()
 
     for element in scc:
-        for child in getChildren(element, False):
-            if child not in scc and element in new_scc:
-                new_scc.remove(element)
+        for child in element.desc.union(element.backs):
+            if child not in scc:
+                to_remove.add(element)
                 break
 
-    if len(new_scc) == len(scc):
-        return scc
+    for element in to_remove:
+        scc.remove(element)
 
-    normal = getSCCset(cluster, False, new_scc)
-    reversed = getSCCset(cluster, True, new_scc)
+    if len_scc == len(scc):
+        return scc
+    else:
+        scc = removeNonterminalNodes(scc, cluster, cluster_rev, orig_cluster)
+
+    normal = getSCCset(cluster, orig_cluster, scc)
+    reversed = getSCCset(cluster_rev, orig_cluster, scc)
     return normal.intersection(reversed)
 
 
-def compSCCcolor (cluster):
-    normal = getSCCset(cluster)
-    reversed = getSCCset(cluster, True)
+def compSCCcolor (cluster, revClusters, orig_cluster):
+    normal = getSCCset(cluster, orig_cluster)
+    reversed = getSCCset(revClusters[cluster.get_name()], orig_cluster)
 
     scc = normal.intersection(reversed)
 
-    scc = removeNonterminalNodes(scc, cluster)
+    scc = removeNonterminalNodes(scc, cluster, revClusters[cluster.get_name()], orig_cluster)
     if len(scc) == 0:
         return
 
@@ -68,17 +75,40 @@ def compSCCcolor (cluster):
         color = '"hsl(0, 100%, 41%)"'
         if isOscillation(scc):
             color = '"hsl(131, 63%, 34%)"'
-    
-    if isStability(scc) and len(cluster.backs) == 0:
-      color = '"hsl(221, 76%, 40%)"'
 
     for cl in scc:
         cl.color = color
 
+def createClustersReversed(clusters):
+    rev_clusters = {}
+    orig_clusters = {}
+    for cl in clusters:
+        new_cl = ClusterNode(cl.rank, None)
+        new_cl.nodes = cl.nodes
+        rev_clusters[cl.get_name()] = new_cl
+        orig_clusters[cl.get_name()] = cl
+
+    for cl in clusters:
+        orig_clusters[cl.get_name()] = cl
+
+        for child in cl.desc:
+            rev_clusters[child.get_name()].desc.add(rev_clusters[cl.get_name()])
+
+        for child in cl.backs:
+            rev_clusters[child.get_name()].backs.add(rev_clusters[cl.get_name()])
+
+    return (rev_clusters, orig_clusters)
+
 def cluster_coloring (clusters):
+    (rev_clusters, orig_clusters) = createClustersReversed(clusters)
 
     for cluster in clusters:
         if len(cluster.desc) != 0:
             continue
 
-        compSCCcolor(cluster)
+        if len(cluster.backs) == 0:
+            cluster.color = '"hsl(221, 76%, 40%)"'
+            continue
+
+        print('starting for ' + cluster.get_name())
+        compSCCcolor(cluster, rev_clusters, orig_clusters)
