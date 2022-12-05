@@ -54,7 +54,7 @@ def parse_rules(rules, nodes, node_count):
     rules = rules.replace(")", " ) ")
     rules = rules.replace("(", " ( ")
 
-    vals = shunting_yard_algo(rules, nodes, node_count)
+    vals = shunting_yard_algo(rules)
 
     epxr = None
     while len(vals) > 0:

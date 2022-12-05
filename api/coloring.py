@@ -1,5 +1,18 @@
 from .clusterNode import *
 
+"""
+COLORING
+
+For every node that do not have any descendatns is checked:
+ * if no backs (descendants with lower rank) - stability
+ * for other compute terminal scc:
+        - compute set representing scc
+        - delete nonterminals, check is still set is scc
+    -> if |scc| = 0 - it is not atractor
+    -> if cycle ~ all clusters in scc have only 1 node
+    -> else complex atractor
+"""
+
 def isOscillation(scc):
     for item in scc:
         if len(item.nodes) != 1 or len(item.desc) + len(item.backs) != 1:
@@ -110,5 +123,4 @@ def cluster_coloring (clusters):
             cluster.color = '"hsl(221, 76%, 40%)"'
             continue
 
-        print('starting for ' + cluster.get_name())
         compSCCcolor(cluster, rev_clusters, orig_clusters)

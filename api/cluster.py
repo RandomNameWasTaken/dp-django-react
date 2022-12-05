@@ -1,6 +1,5 @@
 from collections import deque
 from .clusterNode import *
-from .clusterNode import *
 from .process import *
 from .semantic import *
 
@@ -16,7 +15,7 @@ def get_name(number, nodes):
 
     length = len(res)
     if length < nodes:
-        for i in range(nodes - length):
+        for _ in range(nodes - length):
             res = '0' + res
 
     return res
@@ -41,7 +40,6 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
         stack[-1] = (curr_node, children)
 
         for child in children:
-        #    print(str(child) + " " + str(node_info[child]['rank']))
             if node_info[child]['rank'] < node_info[curr_node]['rank']:
                 node_info[curr_node]['back'].add(child)
                 continue
@@ -52,12 +50,12 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
             if 'cluster' in node_info[child]:
                 continue
 
+            # Cluster according case 1
             if node_info[curr_node]['rank'] == node_info[child]['rank']:
                 curr_cluster.add_node((child, None))
                 node_info[child]['cluster'] = curr_cluster
                 stack.append(child)
                 continue
-
 
             if node_info[curr_node]['rank'] + 1 == node_info[child]['rank']:
                 new_cluster = ClusterNode(node_info[child]['rank'], child)
@@ -68,9 +66,9 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
         (node_check, node_check_children) = stack[-1]
         # Ak je node "black" 
         if node_check == curr_node:
-                 
             stack.pop()
 
+    # Cluster ancestor of curr_node, according case 2
     for curr_node in visited:
         ancestors = anc_function(curr_node, number_of_nodes, nodes, updates, node_info)
         ancestor_by_ranks = {} # To cluster ancestors with same rank
@@ -92,10 +90,10 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
                 node_info[node]['cluster'] = ancestor_by_ranks[r]
 
 
+    # Translation of descs and backs to their clusters
     clusters = set()
     for node in node_info:
         if 'cluster' not in node_info[node]:
-            print("Node without cluster: " + str(node))
             continue
 
         cluster = node_info[node]['cluster']

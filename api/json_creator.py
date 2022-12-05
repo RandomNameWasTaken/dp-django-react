@@ -87,6 +87,7 @@ def create_json_to_cluster(clusters):
 
     return json
 
+# Ordering of descendatns + choosing the biggest/smallest one to middle
 def order_descendants(desc):
     desc = list(desc)
     desc_count = len(desc)

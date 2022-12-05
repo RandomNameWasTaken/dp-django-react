@@ -11,7 +11,6 @@ class ClusterNode:
         self.color = '""'
 
     def get_name(self):
-      #  return ",".join([ str(i) for i in self.nodes ])
       nod = list(self.nodes)
       nod.sort(key=lambda x : str(x))
       return str(self.rank) + '_' + str(nod[0])
