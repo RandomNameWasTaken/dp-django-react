@@ -5,14 +5,16 @@ import { Point } from "./Point";
 import { Interaction } from "three.interaction-fixed";
 import * as rendering_utils from './rendering_utils.js';
 
+// All code necessary for three.js set up and rendering cylinders
+
 export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids, h, w) {
   if (data === undefined) {
     return false;
   }
 
-  const CYLINDER_HEIGHT = 8;
   const number_of_nodes = Object.keys(nodes_ids).length;
 
+  // Scene setup
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xf8f2ea);
   const camera = new THREE.PerspectiveCamera(
@@ -31,9 +33,9 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
   renderer.sortObjects = false;
   renderer.render(scene, camera);
 
-  new Interaction(renderer, scene, camera);
+  new Interaction(renderer, scene, camera); // inicialization for later use of onClick
 
-  // For showing text information about clusters
+  // For showing text 'global' information about clusters
   var texts = [];
   var cylinders = [];
   
@@ -41,6 +43,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
   gui_div.append(gui.domElement);
 
 
+  // Lighting
   const pointLight = new THREE.PointLight(0x818085);
   pointLight.position.set(20, 20, 20);
 
@@ -72,12 +75,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
 
   renderer.setAnimationLoop(animate);
 
-  window.addEventListener("resize", function () {
-    camera.aspect = canvas.width / canvas.width;
-    camera.updateProjectionMatrix();
-    renderer.setSize(canvas.width, canvas.width);
-  });  
-
+  // Adding cylinders to group for easier moving of this object (in controls "Move")
   const group = new THREE.Group();
   cylinders.forEach(function (cyl) {
     group.add(cyl)
@@ -86,109 +84,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
 
   rendering_utils.createControls(gui, cylinders, group);
 
-  function createCylinder(
-    data,
-    id,
-    startPoint,
-    endPoint,
-    currRadius,
-    nextRadius,
-    rank,
-    rank_max
-  ) {
-
-    const isAtractor = data[id]["Color"] !== "";
-
-    const colorBacks = new THREE.Color(
-      isAtractor ? data[id]["Color"] : rendering_utils.calcColorBacks(data[id])
-    );
-
-    const colorRank = new THREE.Color(
-      isAtractor ? data[id]["Color"] : rendering_utils.calcColorRank(rank_max, rank)
-    );
-
-    var cylinderMesh = function (
-      startPoint,
-      endPoint,
-      midPoint,
-      currRadius,
-      nextRadius,
-      colorBacks,
-      colorRank,
-      isAtractor
-    ) {
-
-      const orientation = new THREE.Matrix4();
-      /* THREE.Object3D().up (=Y) default orientation for all objects */
-      orientation.lookAt(startPoint, endPoint, new THREE.Object3D().up);
-
-      /* rotation around axis X by -90 degrees
-       * matches the default orientation Y
-       * with the orientation of looking Z */
-      const mat = new THREE.Matrix4();
-      mat.set(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
-      orientation.multiply(mat);
-
-      /* cylinder: radiusAtTop, radiusAtBottom, 
-          height, radiusSegments, heightSegments */
-      const RADIAL_SEGMENTS = 8;
-      const HEIGHT_SEGMENTS = 1;
-      const edgeGeometry = new THREE.CylinderGeometry(
-        currRadius,
-        nextRadius,
-        CYLINDER_HEIGHT,
-        RADIAL_SEGMENTS,
-        HEIGHT_SEGMENTS
-      );
-
-      const material = new THREE.MeshPhongMaterial({ color: colorBacks, flatShading: true });
-      const cylinder = new THREE.Mesh(
-        edgeGeometry,
-        material
-      );
-
-      cylinder.applyMatrix4(orientation);
-      cylinder.position.set(midPoint.x, midPoint.y, midPoint.z);
-      cylinder.cursor = "pointer";
-
-      cylinder.userData.colorBacks = colorBacks;
-      cylinder.userData.colorRank  = colorRank;
-      cylinder.userData.isAtractor = isAtractor;
-
-      cylinder.on("click", function () {
-        rendering_utils.resetOpacity(cylinders);
-        const newMaterial = cylinder.material.clone();
-        newMaterial.transparent = true;
-        newMaterial.opacity = 0.5;
-        cylinder.material = newMaterial;
-
-        rendering_utils.resetText(texts, scene);
-        description_div.innerHTML = rendering_utils.createDescriptionForCluster(data[id], cylinder, nodes_ids, number_of_nodes);
-      });
-
-      return cylinder;
-    };
-
-    const midPoint = new Point(
-      (startPoint.x + endPoint.x) / 2,
-      (startPoint.y + endPoint.y) / 2,
-      (startPoint.z + endPoint.z) / 2
-    );
-    return cylinderMesh(
-      startPoint,
-      endPoint,
-      midPoint,
-      currRadius,
-      nextRadius,
-      colorBacks,
-      colorRank,
-      isAtractor
-    );
-  }
-
-  // prevPoint, point - upper and downer middle points of cylinder
-  // dirPoint - point to which direction of cylinder (dir vector) should go
-  function clustering(
+  function renderClusters(
     id,
     prevPointFirst,
     pointFirst,
@@ -200,9 +96,9 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
     }
 
     var tuple = Object.freeze({
-      id: id,
+      id:        id,
       prevPoint: prevPointFirst,
-      point: pointFirst,
+      point:     pointFirst,
     });
     var stack = [tuple];
 
@@ -210,6 +106,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
   // according this the position is swiped from left to right - alternating
     var last_dir_right = false;
 
+    // in each round one cylinder is created and afterwards coordinates of his ancestors are computed and added to stack
     while (stack.length > 0) {
       const stackElement = stack.pop();
       const current = stackElement.id;
@@ -227,7 +124,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
           ? childsChildCount
           : childsChildCount + cluster["Desc"].length + (cluster["Separate"] !== undefined ? 1 : 0);
 
-      var cylinder = createCylinder(
+      var cylinder = rendering_utils.createCylinder(
         data,
         current,
         prevPoint,
@@ -235,7 +132,13 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
         upperRadius,
         lowerRadius,
         data[current]["Rank"],
-        biggestRank
+        biggestRank,
+        cylinders,
+        texts,
+        scene,
+        description_div,
+        nodes_ids,
+        number_of_nodes
       );
 
       cylinders.push(cylinder);
@@ -247,6 +150,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
         point.z - prevPoint.z
       );
 
+      // If there is separate - put it under current cylinder
       if (cluster["Separate"] !== undefined) {
           stack.push( rendering_utils.createCoordinatesForSingleSon(point, prevPoint, cluster["Separate"]) );
       }
@@ -264,7 +168,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
         const crossProductVec = rendering_utils.crossProduct(dirVector, uVector);
         const vVector = crossProductVec.divideScalar(adota).normalize();
 
-        // COMPUTE NEW COORDINATES around circle
+        // compute new coordinates around circle
         var theta = (2*Math.PI / childCount) * i;
         if (childCount === 1) {
           if (last_dir_right === true) {
@@ -279,27 +183,27 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
         const u = uVector.multiplyScalar(cos * lowerRadius);
         const v = vVector.multiplyScalar(sin * lowerRadius);
 
-        var newStartPointHelper = u
+        var newStartPoint = u
           .add(v)
           .add(new THREE.Vector3(point.x, point.y, point.z));
 
 
         // Vector which will be prolonged from prevPoint to newStartPointer -> to create newEndPoint
         const vector = new THREE.Vector3(
-          newStartPointHelper.x - prevPoint.x,
-          newStartPointHelper.y - prevPoint.y,
-          newStartPointHelper.z - prevPoint.z
+          newStartPoint.x - prevPoint.x,
+          newStartPoint.y - prevPoint.y,
+          newStartPoint.z - prevPoint.z
         ).normalize();
 
         const newEndPoint = new Point(
-          newStartPointHelper.x + CYLINDER_HEIGHT * vector.x,
-          newStartPointHelper.y + CYLINDER_HEIGHT * vector.y,
-          newStartPointHelper.z + CYLINDER_HEIGHT * vector.z
+          newStartPoint.x + rendering_utils.CYLINDER_HEIGHT * vector.x,
+          newStartPoint.y + rendering_utils.CYLINDER_HEIGHT * vector.y,
+          newStartPoint.z + rendering_utils.CYLINDER_HEIGHT * vector.z
         );
 
         tuple = Object.freeze({
           id: cluster["Desc"][i],
-          prevPoint: newStartPointHelper,
+          prevPoint: newStartPoint,
           point: newEndPoint,
         });
         stack.push(tuple);
@@ -310,6 +214,7 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
   function processClusters(scene, data) {
     var root_cluster_key = undefined;
     var biggestRank = 0;
+    // find biggest rank and root cluster
     Object.entries(data).forEach(([k, v]) => {
       if (v["Rank"] === 0) {
         root_cluster_key = k;
@@ -317,11 +222,12 @@ export function init3Dgraphics(canvas, description_div, gui_div, data, nodes_ids
       biggestRank = Math.max(v["Rank"], biggestRank);
     });
 
-    const firstHeight = (biggestRank * CYLINDER_HEIGHT) / 2 + CYLINDER_HEIGHT;
+    // initialize first position
+    const firstHeight = (biggestRank * rendering_utils.CYLINDER_HEIGHT) / 2 + rendering_utils.CYLINDER_HEIGHT;
     const firstStartPoint = new Point(-20, firstHeight,                   0);
-    const firstEndPoint   = new Point(-20, firstHeight - CYLINDER_HEIGHT, 0);
+    const firstEndPoint   = new Point(-20, firstHeight - rendering_utils.CYLINDER_HEIGHT, 0);
 
-    clustering(
+    renderClusters(
       root_cluster_key,
       firstStartPoint,
       firstEndPoint,

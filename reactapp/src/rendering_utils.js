@@ -4,8 +4,11 @@ import { Point } from "./Point";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 
 export const NEUTRAL_COLOR = "hsl(255, 0%, 46%)";
+export const CYLINDER_HEIGHT = 8;
+const RADIAL_SEGMENTS = 8;
+const HEIGHT_SEGMENTS = 1;
 
-export function resetOpacity(cylinders) {
+function resetOpacity(cylinders) {
     cylinders.forEach(function (cylinder) {
         const newMaterial = cylinder.material.clone();
         newMaterial.transparent = false;
@@ -84,7 +87,7 @@ export function calcColorBacks(cluster) {
   return NEUTRAL_COLOR;
 }
 
-export function calcColorRank(max, val) {
+function calcColorRank(max, val) {
   const min = 0
   var minHue = 240, maxHue=0;
   var curPercent = (val - min) / (max-min);
@@ -152,7 +155,11 @@ export function exportGLTE(input) {
   );
 };
 
-export function createControls(gui, cylinders, group) {
+export function createControls(
+  gui,
+  cylinders,
+  group
+) {
 
   /* Colors */
   var parameters_colors = [
@@ -215,11 +222,11 @@ export function createControls(gui, cylinders, group) {
   /* Move */
   const params_move = {
     right: moveObjectToRight,
-    left: moveObjectToLeft,
-    up: moveObjectUp,
-    down: moveObjectDown,
+    left:  moveObjectToLeft,
+    up:    moveObjectUp,
+    down:  moveObjectDown,
     close: modeObjectCloser,
-    far: moveObjectFar,
+    far:   moveObjectFar,
   };
   var folder_move = gui.addFolder("Move");
 	folder_move.add( params_move, 'right' ).name( 'Move to right' );
@@ -257,4 +264,116 @@ export function createControls(gui, cylinders, group) {
     return exportGLTE(group);
   }
 
+}
+
+function cylinderMesh (
+  data,
+  startPoint,    // point A, for vector (A, B) giving cylinder its direction of rotation
+  endPoint,      // point B, for vector (A, B) described at startPoint
+  midPoint,      // position of mesh
+  upperRadius,
+  lowerRadius,
+  colorBacks,    // color for back variation of coloring
+  colorRank,     // color for rank variation of coloring - with colorBacks saved as userData for each cylinder
+  isAtractor,
+  cylinders,
+  scene
+) {
+
+  const orientation = new THREE.Matrix4();
+  /* THREE.Object3D().up (=Y) default orientation for all objects */
+  orientation.lookAt(startPoint, endPoint, new THREE.Object3D().up);
+
+  /* rotation around axis X by -90 degrees
+   * matches the default orientation Y
+   * with the orientation of looking Z */
+  const mat = new THREE.Matrix4();
+  mat.set(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
+  orientation.multiply(mat);
+
+  /* cylinder: radiusAtTop, radiusAtBottom, 
+      height, radiusSegments, heightSegments */
+
+  const edgeGeometry = new THREE.CylinderGeometry(
+    upperRadius,
+    lowerRadius,
+    CYLINDER_HEIGHT,
+    RADIAL_SEGMENTS,
+    HEIGHT_SEGMENTS
+  );
+
+  const material = new THREE.MeshPhongMaterial({ color: colorBacks, flatShading: true });
+  const cylinder = new THREE.Mesh(
+    edgeGeometry,
+    material
+  );
+
+  cylinder.applyMatrix4(orientation);
+  cylinder.position.set(midPoint.x, midPoint.y, midPoint.z);
+  cylinder.cursor = "pointer";
+
+  cylinder.userData.colorBacks = colorBacks;
+  cylinder.userData.colorRank  = colorRank;
+  cylinder.userData.isAtractor = isAtractor;
+
+  return cylinder;
+};
+
+export function createCylinder(
+  data,           // clustered data
+  id,             // id of current cluster
+  startPoint,     // point A, for vector (A, B) giving cylinder its direction of rotation
+  endPoint,       // point B, for vector (A, B) described at startPoing
+  upperRadius,
+  lowerRadius,
+  rank,
+  rank_max,
+  cylinders,
+  texts,
+  scene,
+  description_div,
+  nodes_ids,
+  number_of_nodes
+) {
+
+  const isAtractor = data[id]["Color"] !== "";
+  const colorBacks = new THREE.Color(
+    isAtractor ? data[id]["Color"] : calcColorBacks(data[id])
+  );
+  const colorRank = new THREE.Color(
+    isAtractor ? data[id]["Color"] : calcColorRank(rank_max, rank)
+  );
+
+  const midPoint = new Point(     // central point of cylinder <-> its position
+    (startPoint.x + endPoint.x) / 2,
+    (startPoint.y + endPoint.y) / 2,
+    (startPoint.z + endPoint.z) / 2
+  );
+
+  var cylinder = cylinderMesh(
+    data,
+    startPoint,
+    endPoint,
+    midPoint,
+    upperRadius,
+    lowerRadius,
+    colorBacks,
+    colorRank,
+    isAtractor,
+    cylinders,
+    scene
+  );
+
+  cylinder.on("click", function () {
+    resetOpacity(cylinders);
+    const newMaterial = cylinder.material.clone();
+    newMaterial.transparent = true;
+    newMaterial.opacity = 0.5;
+    cylinder.material = newMaterial;
+
+    resetText(texts, scene);
+    description_div.innerHTML = createDescriptionForCluster(data[id], cylinder, nodes_ids, number_of_nodes);
+  });
+
+  return cylinder;
 }
