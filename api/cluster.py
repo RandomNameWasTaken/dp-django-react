@@ -2,6 +2,17 @@ from collections import deque
 from .clusterNode import *
 from .process import *
 from .semantic import *
+from .helpers import *
+
+"""
+CLUSTER
+
+Main part of backend.
+First computes and then using dfs it creates clusters for each node.
+If there is edge from node to another with same rank, they are joined to one cluster.
+Else for each child is created new cluster.
+After dfs, joining ancestors of each cluster according their rank. 
+"""
 
 def get_generate_function(semantics):
     return generate_connection_for_node_async if semantics == Semantics.ASYNC else generate_connection_for_node_sync
@@ -9,16 +20,6 @@ def get_generate_function(semantics):
 def get_ancestor_function(semantics):
     return get_ancestors_of_node_async if semantics == Semantics.ASYNC else get_ancestors_of_node_sync 
 
-def get_name(number, nodes):
-    res = bin(number)
-    res = res[2:]
-
-    length = len(res)
-    if length < nodes:
-        for _ in range(nodes - length):
-            res = '0' + res
-
-    return res
 
 def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
     anc_function   = get_ancestor_function(semantics)
@@ -40,6 +41,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
         stack[-1] = (curr_node, children)
 
         for child in children:
+            # mark existence of child - only its id not cluster
             if node_info[child]['rank'] < node_info[curr_node]['rank']:
                 node_info[curr_node]['back'].add(child)
                 continue
@@ -64,7 +66,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
                 continue
         
         (node_check, node_check_children) = stack[-1]
-        # Ak je node "black" 
+        # If we did not added any new clusters to stack we are done
         if node_check == curr_node:
             stack.pop()
 
@@ -79,6 +81,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
             if 'cluster' not in node_info[ancestor_key]:
                 continue
 
+            # Accumulate ancestors by rank and join them into one cluster
             r = node_info[ancestor_key]['rank']
             if r not in ancestor_by_ranks:
                 ancestor_by_ranks[r] = node_info[ancestor_key]['cluster']
@@ -109,7 +112,7 @@ def clustering_(root, number_of_nodes, node_info, nodes, updates, semantics):
 
     return clusters
 
-
+# Rank computing - depending on distance from root
 def rank_by_path(root, rank, number_of_nodes, nodes, updates, semantics):
 
     generate_fun = get_generate_function(semantics)

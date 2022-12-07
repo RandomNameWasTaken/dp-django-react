@@ -20,7 +20,6 @@ def add_key(nodes, node, node_count):
     return node_count
 
 def shunting_yard_algo(rules):
-
     output = []
     stack_op = []
 

@@ -10,6 +10,8 @@ def create_nodes_of_state_space(number_of_nodes):
     return state_space_ids
 
 
+# Try to substitue each 1/0 in original state and try to compute this original state
+# as its child
 def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, updates, node_info):
     curr_state = get_name(state_id, number_of_nodes)
 
@@ -19,7 +21,7 @@ def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, updates, node_
 
         pot_ancestor = pot_ancestor[:idx] + ('0' if i == '1' else '1') + pot_ancestor[idx + 1:]
 
-        new_val = updates[idx].eval(pot_ancestor) # None for parametrization
+        new_val = updates[idx].eval(pot_ancestor)
         new_state = pot_ancestor[:idx] + str(int(new_val)) + pot_ancestor[idx + 1:]
        
         if new_state == curr_state:
@@ -29,13 +31,15 @@ def get_ancestors_of_node_async(state_id, number_of_nodes, nodes, updates, node_
     return frozenset(ancestors)
 
             
+# Ancestors are precomputed in generate_connection_for_node_sync
 def get_ancestors_of_node_sync(state_id, number_of_nodes, nodes, updates, node_info):
     if 'anc' not in node_info[state_id]:
         return {}
 
     return frozenset(node_info[state_id]['anc'])
 
-
+# For each position (corresponding to node in bool. network) aply update function and check
+# if it is not same as original state.
 def generate_connection_for_node_async(state_id, number_of_nodes, nodes, updates, node_info = {}):
 
     connections = set()
@@ -45,7 +49,7 @@ def generate_connection_for_node_async(state_id, number_of_nodes, nodes, updates
     for node in nodes:
         node_indx = nodes[node]
 
-        new_val = updates[node_indx].eval(curr_state) # None for parametrization
+        new_val = updates[node_indx].eval(curr_state)
         state_to_connect = curr_state[:node_indx] + str(int(new_val)) + curr_state[node_indx + 1:]
 
         if state_to_connect == curr_state:
@@ -54,12 +58,12 @@ def generate_connection_for_node_async(state_id, number_of_nodes, nodes, updates
         state_to_connect_id = get_id(state_to_connect)
         connections.add(state_to_connect_id)
 
-    # set namiesto arr of connections
     children = frozenset(connections)
 
     return children
 
-
+# For each position (corresponding to node in bool. network) aply update function - create one "child".
+# If child is same as original return empty set.
 def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, updates, node_info = {}):
     connections = set()
     state_to_connect = get_name(state_id, number_of_nodes)
@@ -70,7 +74,7 @@ def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, updates,
         update = nodes[node]
         indx_of_node_in_state = update  # this value is going to be changed
 
-        new_val = updates[update].eval(old_state) # None for parametrization
+        new_val = updates[update].eval(old_state)
         state_to_connect = state_to_connect[:indx_of_node_in_state] + str(int(new_val)) + state_to_connect[indx_of_node_in_state + 1:]
 
     state_to_connect_id = get_id(state_to_connect)
@@ -82,7 +86,7 @@ def generate_connection_for_node_sync(state_id, number_of_nodes, nodes, updates,
         else:
             node_info[state_to_connect_id]['anc'] = { state_id }
 
-    # set namiesto arr of connections
+    # set instead of arr of connections
     children = frozenset(connections)
 
     return children
