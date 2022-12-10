@@ -97,6 +97,8 @@ export default class Visualise extends React.Component {
             this.setState({ both : both_semantics });
 
             var width_height = {};
+            console.log(fileData);
+            console.log(Object.keys(fileData));
             for (var key in fileData) {
                 canvases.push(this.createInfo(fileData, key, index, both_semantics));
 
@@ -127,7 +129,7 @@ export default class Visualise extends React.Component {
                     const gui_div = React.createElement('div', { id : "gui_div" + index, class: "col-4" });
                     const divs = React.createElement('div', { class: "row" }, [gui_div, can_div]);
 
-                    const cl = Object.keys(fileData[key]).length === 3 && Object.keys(fileData) === 1 && !both_semantics ? "col-11" : "col-5";
+                    const cl = Object.keys(fileData).length === 1 && !both_semantics ? "col-11" : "col-5";
                     canvases.push(React.createElement('div', { class: cl }, [divs, canvas]));
 
                     const quotient = Math.floor(index/2);
