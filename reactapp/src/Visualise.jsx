@@ -201,8 +201,8 @@ export default class Visualise extends React.Component {
         if (this.state.both) {
             headline =
                     <div class="row">
-                        <h3 class="col-6 App">Asymmetric</h3>
-                        <h3 class="col-6 App">Symmetric</h3>
+                        <h3 class="col-6 App">Asynchronous</h3>
+                        <h3 class="col-6 App">Synchronous</h3>
                     </div>;
         }
 
